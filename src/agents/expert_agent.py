@@ -796,7 +796,6 @@ class ExpertAgent:
                             params["project_type"] = args_list[1] if len(args_list) > 1 else "python"
                             if len(args_list) > 2:
                                 try:
-                                    import json
                                     params["options"] = json.loads(args_list[2]) if isinstance(args_list[2], str) else args_list[2]
                                 except:
                                     params["options"] = {}
@@ -979,7 +978,6 @@ class ExpertAgent:
                                 # Parse options if provided
                                 if len(args_matches) > 2:
                                     try:
-                                        import json
                                         params["options"] = json.loads(args_matches[2])
                                     except:
                                         params["options"] = {}
@@ -1050,8 +1048,43 @@ class ExpertAgent:
                 tools_executed_count += 1
         
         if not tool_executed:
+            # If no tool was detected, try to extract code and create file automatically
+            # Check if user asked to create a file/script
+            file_creation_keywords = ["create", "write", "make", "generate", "script", "file", "program", "code"]
+            if any(keyword in user_input.lower() for keyword in file_creation_keywords):
+                # Try to extract Python code from response
+                code_blocks = re.findall(r'```(?:python)?\s*\n(.*?)```', response, re.DOTALL)
+                if not code_blocks:
+                    # Try to find code without markdown
+                    # Look for import statements or def/class patterns
+                    code_pattern = r'(import\s+\w+|def\s+\w+|class\s+\w+)(.*?)(?=\n\n|\n[A-Z]|\Z)'
+                    code_matches = re.findall(code_pattern, response, re.DOTALL)
+                    if code_matches:
+                        # Reconstruct code from matches
+                        code_blocks = [''.join(code_matches)]
+                
+                if code_blocks:
+                    # Determine filename from user request or use default
+                    filename = "script.py"
+                    if "math" in user_input.lower() or "calculator" in user_input.lower():
+                        filename = "math_helper.py"
+                    elif "fibonacci" in user_input.lower():
+                        filename = "fibonacci.py"
+                    else:
+                        # Try to extract filename from response
+                        filename_match = re.search(r'(?:save|create|write|file|as)\s+(\w+\.\w+)', user_input.lower())
+                        if filename_match:
+                            filename = filename_match.group(1)
+                    
+                    console.print(f"[bold green]🔧 Auto-creating file: {filename}[/bold green]")
+                    code_content = code_blocks[0].strip()
+                    result = self.tools.write_file(filename, code_content)
+                    console.print(Panel(str(result), title="✅ File Created", border_style="green"))
+                    final_response = f"✅ Created {filename} with the requested code.\n\n{result}"
+                    tool_executed = True
+            
             # If no tool was detected by regex, check for specific keywords
-            if "read_knowledge_base" in response and "n8n" in user_input.lower():
+            if not tool_executed and "read_knowledge_base" in response and "n8n" in user_input.lower():
                 console.print("[bold green]🔧 Auto-executing read_knowledge_base for n8n...[/bold green]")
                 result = self.expert_tools.read_knowledge_base("n8n")
                 console.print(Panel(str(result), title="✅ Tool Result", border_style="green"))
