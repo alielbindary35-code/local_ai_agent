@@ -2,8 +2,8 @@
 # Comprehensive Learning Plan on Google Colab
 
 ## 🎯 الهدف / Goal
-تعلم **كل الأدوات** (67+ أداة) على Colab ثم دمجها محلياً
-Learn **ALL tools** (67+ tools) on Colab then merge locally
+تعلم **كل الأدوات** (120+ أداة) على Colab ثم دمجها محلياً
+Learn **ALL tools** (120+ tools) on Colab then merge locally
 
 ---
 
@@ -13,7 +13,7 @@ Learn **ALL tools** (67+ tools) on Colab then merge locally
 
 1. **تأكد من أن كل الأدوات في القائمة**
    - Check `data/essential_tools.json` has all tools
-   - Total: **67 tools** across 5 categories
+   - Total: **120+ tools** across 15 categories
 
 2. **حذف progress السابق (اختياري)**
    ```python
@@ -45,7 +45,7 @@ if os.getcwd() not in sys.path:
 from src.tools.auto_learner import AutoLearner
 
 learner = AutoLearner()
-learner.learn_all()  # This will learn ALL 67 tools!
+learner.learn_all()  # This will learn ALL 120+ tools!
 ```
 
 **الوقت المتوقع**: ~10-15 دقيقة
@@ -157,7 +157,7 @@ Write-Host "✅ Learned tools: $($progress.Count)"
 $folders = Get-ChildItem data\knowledge_base -Directory
 Write-Host "✅ Knowledge base folders: $($folders.Count)"
 
-# Should be 67!
+# Should be 120+!
 ```
 
 ---
@@ -176,8 +176,9 @@ Write-Host "✅ Knowledge base folders: $($folders.Count)"
    ```python
    import json
    progress = json.loads(open("data/learning_progress.json").read())
-   print(f"Learned: {len(progress)}/{67} tools")
-   print(f"Remaining: {67 - len(progress)} tools")
+   total = 120  # Approximate total
+   print(f"Learned: {len(progress)}/{total} tools")
+   print(f"Remaining: {total - len(progress)} tools")
    ```
 
 ---
@@ -185,7 +186,7 @@ Write-Host "✅ Knowledge base folders: $($folders.Count)"
 ## 🚀 النتيجة النهائية / Final Result
 
 بعد اكتمال العملية:
-- ✅ **67+ أداة** متعلمة
+- ✅ **120+ أداة** متعلمة
 - ✅ **Knowledge base** كامل محلياً
 - ✅ **Agent جاهز** للاستخدام الفوري
 - ✅ **لا حاجة** لتعلم إضافي

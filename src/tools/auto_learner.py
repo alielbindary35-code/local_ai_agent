@@ -9,8 +9,16 @@ It reads a list of tools and systematically learns them using the FastLearning m
 import json
 import time
 import sys
-from pathlib import Path
 from typing import List, Dict
+
+# Import paths system
+from src.core.paths import (
+    get_data_dir,
+    get_essential_tools_file,
+    get_learning_progress_file,
+    get_knowledge_base_dir,
+    ensure_dir
+)
 
 # Check if we're in a Jupyter/Colab environment
 IN_JUPYTER = hasattr(sys, 'ps1') or 'ipykernel' in str(type(sys.modules.get('IPython', None)))
@@ -28,19 +36,18 @@ else:
     console = SimpleConsole()
 
 # Import our tools
-try:
-    from src.tools.fast_learning import FastLearning
-except ImportError:
-    # Handle running from different directories
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-    from src.tools.fast_learning import FastLearning
+from src.tools.fast_learning import FastLearning
 
 class AutoLearner:
     def __init__(self):
         self.fast_learner = FastLearning()
-        self.data_dir = Path("data")
-        self.tools_file = self.data_dir / "essential_tools.json"
-        self.progress_file = self.data_dir / "learning_progress.json"
+        self.data_dir = get_data_dir()
+        self.tools_file = get_essential_tools_file()
+        self.progress_file = get_learning_progress_file()
+        
+        # Ensure directories exist
+        ensure_dir(self.data_dir)
+        ensure_dir(get_knowledge_base_dir())
         
     def load_tools_list(self) -> Dict[str, List[str]]:
         """Load the master list of tools to learn"""
@@ -122,6 +129,30 @@ class AutoLearner:
                             topics.extend(["crud-operations", "connection-setup", "query-examples"])
                         elif category == "devops_and_docker":
                             topics.extend(["configuration", "deployment", "cli-commands"])
+                        elif category == "backend":
+                            topics.extend(["routing", "middleware", "api-design", "authentication"])
+                        elif category == "frontend":
+                            topics.extend(["components", "styling", "state-management", "routing"])
+                        elif category == "cloud_platforms":
+                            topics.extend(["services", "pricing", "deployment", "scaling"])
+                        elif category == "mobile_development":
+                            topics.extend(["ui-components", "navigation", "platform-specific", "performance"])
+                        elif category == "testing_frameworks":
+                            topics.extend(["unit-testing", "integration-testing", "e2e-testing", "mocking"])
+                        elif category == "security_tools":
+                            topics.extend(["vulnerability-scanning", "penetration-testing", "security-best-practices"])
+                        elif category == "api_tools":
+                            topics.extend(["api-design", "documentation", "testing", "mock-servers"])
+                        elif category == "version_control":
+                            topics.extend(["workflows", "branching-strategies", "ci-cd-integration"])
+                        elif category == "monitoring_logging":
+                            topics.extend(["log-aggregation", "metrics", "alerting", "dashboards"])
+                        elif category == "message_queues":
+                            topics.extend(["pub-sub", "message-patterns", "scaling", "reliability"])
+                        elif category == "caching":
+                            topics.extend(["cache-strategies", "invalidation", "performance-optimization"])
+                        elif category == "build_tools":
+                            topics.extend(["bundling", "optimization", "code-splitting", "plugins"])
                             
                         # Execute learning
                         results = self.fast_learner.learn_fast(tool, topics)
@@ -173,6 +204,30 @@ class AutoLearner:
                                 topics.extend(["crud-operations", "connection-setup", "query-examples"])
                             elif category == "devops_and_docker":
                                 topics.extend(["configuration", "deployment", "cli-commands"])
+                            elif category == "backend":
+                                topics.extend(["routing", "middleware", "api-design", "authentication"])
+                            elif category == "frontend":
+                                topics.extend(["components", "styling", "state-management", "routing"])
+                            elif category == "cloud_platforms":
+                                topics.extend(["services", "pricing", "deployment", "scaling"])
+                            elif category == "mobile_development":
+                                topics.extend(["ui-components", "navigation", "platform-specific", "performance"])
+                            elif category == "testing_frameworks":
+                                topics.extend(["unit-testing", "integration-testing", "e2e-testing", "mocking"])
+                            elif category == "security_tools":
+                                topics.extend(["vulnerability-scanning", "penetration-testing", "security-best-practices"])
+                            elif category == "api_tools":
+                                topics.extend(["api-design", "documentation", "testing", "mock-servers"])
+                            elif category == "version_control":
+                                topics.extend(["workflows", "branching-strategies", "ci-cd-integration"])
+                            elif category == "monitoring_logging":
+                                topics.extend(["log-aggregation", "metrics", "alerting", "dashboards"])
+                            elif category == "message_queues":
+                                topics.extend(["pub-sub", "message-patterns", "scaling", "reliability"])
+                            elif category == "caching":
+                                topics.extend(["cache-strategies", "invalidation", "performance-optimization"])
+                            elif category == "build_tools":
+                                topics.extend(["bundling", "optimization", "code-splitting", "plugins"])
                                 
                             # Execute learning
                             results = self.fast_learner.learn_fast(tool, topics)
@@ -191,12 +246,14 @@ class AutoLearner:
                             console.print(f"[red]❌ Failed to learn {tool}: {e}[/red]")
                             continue
         
+        kb_path = get_knowledge_base_dir()
+        
         if IN_JUPYTER:
             print("\n✨ Auto-Learning Session Complete! ✨")
-            print(f"📂 Knowledge stored in: {Path('data/knowledge_base').absolute()}")
+            print(f"📂 Knowledge stored in: {kb_path.absolute()}")
         else:
             console.print("\n[bold green]✨ Auto-Learning Session Complete! ✨[/bold green]")
-            console.print(f"📂 Knowledge stored in: {Path('data/knowledge_base').absolute()}")
+            console.print(f"📂 Knowledge stored in: {kb_path.absolute()}")
 
 if __name__ == "__main__":
     learner = AutoLearner()

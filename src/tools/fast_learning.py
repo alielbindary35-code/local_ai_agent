@@ -102,6 +102,7 @@ class FastLearning:
     def _get_official_docs(self, technology: str, topic: str) -> List[Dict[str, str]]:
         """Get official documentation URLs"""
         doc_urls = {
+            # Existing
             "docker": "https://docs.docker.com",
             "postgres": "https://www.postgresql.org/docs/",
             "postgresql": "https://www.postgresql.org/docs/",
@@ -115,6 +116,36 @@ class FastLearning:
             "fastapi": "https://fastapi.tiangolo.com",
             "django": "https://docs.djangoproject.com",
             "flask": "https://flask.palletsprojects.com",
+            # Cloud Platforms
+            "aws": "https://docs.aws.amazon.com",
+            "azure": "https://docs.microsoft.com/azure",
+            "gcp": "https://cloud.google.com/docs",
+            "vercel": "https://vercel.com/docs",
+            "netlify": "https://docs.netlify.com",
+            # Mobile
+            "react native": "https://reactnative.dev/docs",
+            "flutter": "https://docs.flutter.dev",
+            "swift": "https://docs.swift.org",
+            "kotlin": "https://kotlinlang.org/docs",
+            # Testing
+            "jest": "https://jestjs.io/docs",
+            "pytest": "https://docs.pytest.org",
+            "selenium": "https://www.selenium.dev/documentation",
+            "cypress": "https://docs.cypress.io",
+            "playwright": "https://playwright.dev/docs",
+            # Security
+            "owasp": "https://owasp.org",
+            # API Tools
+            "postman": "https://learning.postman.com/docs",
+            "graphql": "https://graphql.org/learn",
+            "swagger": "https://swagger.io/docs",
+            # Version Control
+            "git": "https://git-scm.com/doc",
+            "github actions": "https://docs.github.com/actions",
+            # Build Tools
+            "webpack": "https://webpack.js.org",
+            "vite": "https://vitejs.dev/guide",
+            "rollup": "https://rollupjs.org/guide",
         }
         
         base_url = doc_urls.get(technology.lower())

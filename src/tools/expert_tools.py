@@ -18,6 +18,12 @@ from typing import Dict, Any, List, Optional
 import requests
 from datetime import datetime
 
+# Import paths system
+from src.core.paths import (
+    get_knowledge_base_dir,
+    ensure_dir
+)
+
 
 class ExpertTools:
     """
@@ -402,8 +408,8 @@ volumes:
     def read_knowledge_base(self, technology: str) -> str:
         """Read saved knowledge about a technology"""
         try:
-            # Use data/knowledge_base for organized structure
-            kb_dir = Path("data/knowledge_base") / technology.lower().replace(" ", "_")
+            # Use centralized knowledge base path
+            kb_dir = get_knowledge_base_dir() / technology.lower().replace(" ", "_")
             
             if not kb_dir.exists():
                 return f"❌ No knowledge found for {technology}. Try learning it first using: learn_new_technology('{technology}', ...)"
@@ -431,9 +437,9 @@ volumes:
     def save_code_snippet(self, code: str, language: str, description: str, tags: List[str] = None) -> str:
         """Save code snippet to knowledge base"""
         try:
-            # Use data/knowledge_base for organized structure
-            snippets_dir = Path("data/knowledge_base/snippets")
-            snippets_dir.mkdir(parents=True, exist_ok=True)
+            # Use centralized knowledge base path
+            snippets_dir = get_knowledge_base_dir() / "snippets"
+            ensure_dir(snippets_dir)
             
             # Create snippet file
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -469,9 +475,9 @@ volumes:
             Success message
         """
         try:
-            # Use data/knowledge_base for organized structure
-            kb_dir = Path("data/knowledge_base") / technology.lower().replace(" ", "_")
-            kb_dir.mkdir(parents=True, exist_ok=True)
+            # Use centralized knowledge base path
+            kb_dir = get_knowledge_base_dir() / technology.lower().replace(" ", "_")
+            ensure_dir(kb_dir)
             
             file_path = kb_dir / filename
             

@@ -11,6 +11,9 @@ from datetime import datetime
 from typing import List, Tuple, Dict, Any, Optional
 from pathlib import Path
 
+# Import paths system
+from src.core.paths import get_memory_db_file
+
 
 class Memory:
     """
@@ -19,15 +22,17 @@ class Memory:
     نظام التعلم والذاكرة المتقدم لوكيل الذكاء الاصطناعي.
     """
     
-    def __init__(self, db_path: str = "agent_memory.db"):
+    def __init__(self, db_path: Optional[str] = None):
         """
         Initialize memory system.
         
         Args:
-            db_path: Path to SQLite database file
+            db_path: Path to SQLite database file (defaults to centralized path)
         """
-        self.db_path = db_path
-        self.conn = sqlite3.connect(db_path)
+        if db_path is None:
+            db_path = get_memory_db_file()
+        self.db_path = str(db_path)
+        self.conn = sqlite3.connect(self.db_path)
         self.create_tables()
     
     def create_tables(self):

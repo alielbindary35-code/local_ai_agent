@@ -10,7 +10,10 @@
         "Jupyter Notebooks",
         "Apache Spark",
         "Power BI",
-        "Tableau"
+        "Tableau",
+        "Polars",
+        "Dask",
+        "XGBoost"
     ],
     "databases": [
         "PostgreSQL",
@@ -21,7 +24,10 @@
         "Cassandra",
         "Elasticsearch",
         "Neo4j",
-        "Firebase"
+        "Firebase",
+        "InfluxDB",
+        "TimescaleDB",
+        "CouchDB"
     ],
     "devops_and_docker": [
         "Docker",
@@ -32,7 +38,10 @@
         "Terraform",
         "Ansible",
         "Prometheus",
-        "Grafana"
+        "Grafana",
+        "Helm",
+        "Istio",
+        "ArgoCD"
     ],
     "backend": [
         "FastAPI",
@@ -40,13 +49,106 @@
         "Flask",
         "Node.js",
         "Express.js",
-        "NestJS"
+        "NestJS",
+        "Spring Boot",
+        "Ruby on Rails",
+        "Laravel"
     ],
     "frontend": [
         "React",
         "Vue.js",
         "Next.js",
         "Tailwind CSS",
-        "TypeScript"
+        "TypeScript",
+        "Svelte",
+        "Angular",
+        "Astro"
+    ],
+    "cloud_platforms": [
+        "AWS",
+        "Azure",
+        "GCP",
+        "DigitalOcean",
+        "Heroku",
+        "Vercel",
+        "Netlify",
+        "Cloudflare",
+        "Firebase",
+        "Supabase"
+    ],
+    "mobile_development": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "Xamarin",
+        "Ionic",
+        "Cordova",
+        "Expo"
+    ],
+    "testing_frameworks": [
+        "Jest",
+        "Pytest",
+        "Selenium",
+        "Cypress",
+        "Playwright",
+        "Mocha",
+        "Chai",
+        "JUnit",
+        "TestNG",
+        "Vitest"
+    ],
+    "security_tools": [
+        "OWASP",
+        "Burp Suite",
+        "OWASP ZAP",
+        "Nmap",
+        "Metasploit",
+        "Wireshark",
+        "Hashcat",
+        "John the Ripper"
+    ],
+    "api_tools": [
+        "Postman",
+        "Insomnia",
+        "Swagger",
+        "OpenAPI",
+        "GraphQL",
+        "REST Assured"
+    ],
+    "version_control": [
+        "Git",
+        "GitHub Actions",
+        "GitLab",
+        "Bitbucket",
+        "SVN"
+    ],
+    "monitoring_logging": [
+        "ELK Stack",
+        "Splunk",
+        "Datadog",
+        "New Relic",
+        "Sentry",
+        "Logstash"
+    ],
+    "message_queues": [
+        "RabbitMQ",
+        "Apache Kafka",
+        "Redis",
+        "AWS SQS",
+        "Apache Pulsar"
+    ],
+    "caching": [
+        "Redis",
+        "Memcached",
+        "Varnish",
+        "CDN"
+    ],
+    "build_tools": [
+        "Webpack",
+        "Vite",
+        "Rollup",
+        "Parcel",
+        "Turbopack"
     ]
 }

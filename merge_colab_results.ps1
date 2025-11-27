@@ -1,7 +1,11 @@
 # Merge Colab Knowledge Base with Local
 # This script merges the downloaded knowledge_base.zip with your local knowledge base
 
-Write-Host "🔄 Merging Colab Knowledge Base with Local" -ForegroundColor Cyan
+# Get script directory
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $ScriptDir
+
+Write-Host "Merging Colab Knowledge Base with Local" -ForegroundColor Cyan
 Write-Host ""
 
 # Check if zip exists in Downloads (try both names)
@@ -19,7 +23,7 @@ foreach ($name in $possibleNames) {
 }
 
 if (-not $zipPath) {
-    Write-Host "❌ Knowledge base zip not found in Downloads folder" -ForegroundColor Red
+    Write-Host "ERROR: Knowledge base zip not found in Downloads folder" -ForegroundColor Red
     Write-Host "Looking for:" -ForegroundColor Yellow
     foreach ($name in $possibleNames) {
         Write-Host "  - $name" -ForegroundColor Yellow
@@ -34,7 +38,7 @@ if (-not $zipPath) {
     }
 }
 
-Write-Host "✅ Found zip file: $zipPath" -ForegroundColor Green
+Write-Host "Found zip file: $zipPath" -ForegroundColor Green
 
 # Create temp extraction directory
 $tempDir = "$HOME\Downloads\knowledge_base_temp"
@@ -44,12 +48,12 @@ if (Test-Path $tempDir) {
 New-Item -ItemType Directory -Path $tempDir | Out-Null
 
 Write-Host ""
-Write-Host "📦 Extracting zip file..." -ForegroundColor Cyan
+Write-Host "Extracting zip file..." -ForegroundColor Cyan
 try {
     Expand-Archive -Path $zipPath -DestinationPath $tempDir -Force
-    Write-Host "✅ Extraction complete" -ForegroundColor Green
+    Write-Host "Extraction complete" -ForegroundColor Green
 } catch {
-    Write-Host "❌ Failed to extract: $_" -ForegroundColor Red
+    Write-Host "Failed to extract: $_" -ForegroundColor Red
     exit 1
 }
 
@@ -61,57 +65,57 @@ if (-not $extractedKb) {
 }
 
 Write-Host ""
-Write-Host "📂 Found knowledge base at: $($extractedKb.FullName)" -ForegroundColor Cyan
+Write-Host "Found knowledge base at: $($extractedKb.FullName)" -ForegroundColor Cyan
 
 # Count folders
 $folders = Get-ChildItem -Path $extractedKb.FullName -Directory
-Write-Host "📚 Found $($folders.Count) technology folders" -ForegroundColor Yellow
+Write-Host "Found $($folders.Count) technology folders" -ForegroundColor Yellow
 
-# Ensure local knowledge base exists
-$localKb = "data\knowledge_base"
+# Ensure local knowledge base exists (using project root)
+$localKb = Join-Path $ProjectRoot "data\knowledge_base"
 if (-not (Test-Path $localKb)) {
-    New-Item -ItemType Directory -Path $localKb | Out-Null
-    Write-Host "✅ Created local knowledge base directory" -ForegroundColor Green
+    New-Item -ItemType Directory -Path $localKb -Force | Out-Null
+    Write-Host "Created local knowledge base directory" -ForegroundColor Green
 }
 
 Write-Host ""
-Write-Host "🔄 Copying folders to local knowledge base..." -ForegroundColor Cyan
+Write-Host "Copying folders to local knowledge base..." -ForegroundColor Cyan
 
 $copied = 0
 $skipped = 0
 foreach ($folder in $folders) {
     $dest = Join-Path $localKb $folder.Name
     if (Test-Path $dest) {
-        Write-Host "  ⚠️  $($folder.Name) already exists - merging..." -ForegroundColor Yellow
+        Write-Host "  WARNING: $($folder.Name) already exists - merging..." -ForegroundColor Yellow
         # Merge contents
         Copy-Item -Path "$($folder.FullName)\*" -Destination $dest -Recurse -Force
         $merged = $true
     } else {
         Copy-Item -Path $folder.FullName -Destination $dest -Recurse
-        Write-Host "  ✅ Copied $($folder.Name)" -ForegroundColor Green
+        Write-Host "  OK: Copied $($folder.Name)" -ForegroundColor Green
         $copied++
     }
 }
 
 Write-Host ""
-Write-Host "✨ Merge Complete!" -ForegroundColor Green
+Write-Host "Merge Complete!" -ForegroundColor Green
 Write-Host "   Copied: $copied new folders" -ForegroundColor Cyan
 Write-Host "   Merged: $($folders.Count - $copied) existing folders" -ForegroundColor Cyan
 
 # Cleanup
 Write-Host ""
-Write-Host "🧹 Cleaning up temporary files..." -ForegroundColor Cyan
+Write-Host "Cleaning up temporary files..." -ForegroundColor Cyan
 Remove-Item -Path $tempDir -Recurse -Force
-Write-Host "✅ Cleanup complete" -ForegroundColor Green
+Write-Host "Cleanup complete" -ForegroundColor Green
 
 # Merge progress file if exists
 $progressFile = "$HOME\Downloads\learning_progress.json"
 if (Test-Path $progressFile) {
     Write-Host ""
-    Write-Host "📊 Merging progress file..." -ForegroundColor Cyan
+    Write-Host "Merging progress file..." -ForegroundColor Cyan
     
     $localProgress = @()
-    $localProgressFile = "data\learning_progress.json"
+    $localProgressFile = Join-Path $ProjectRoot "data\learning_progress.json"
     if (Test-Path $localProgressFile) {
         $localProgress = Get-Content $localProgressFile | ConvertFrom-Json
     }
@@ -122,23 +126,23 @@ if (Test-Path $progressFile) {
     $mergedProgress = ($localProgress + $colabProgress) | Select-Object -Unique | Sort-Object
     
     $mergedProgress | ConvertTo-Json | Set-Content $localProgressFile
-    Write-Host "✅ Progress merged: $($mergedProgress.Count) tools learned" -ForegroundColor Green
+    Write-Host "Progress merged: $($mergedProgress.Count) tools learned" -ForegroundColor Green
 }
 
 Write-Host ""
-Write-Host "📂 Your local knowledge base is now at: $(Resolve-Path $localKb)" -ForegroundColor Cyan
+Write-Host "Your local knowledge base is now at: $localKb" -ForegroundColor Cyan
 
 # Final summary
-$finalFolders = (Get-ChildItem -Path $localKb -Directory).Count
+$finalFolders = (Get-ChildItem -Path $localKb -Directory -ErrorAction SilentlyContinue).Count
 $finalProgress = @()
-if (Test-Path "data\learning_progress.json") {
-    $finalProgress = Get-Content "data\learning_progress.json" | ConvertFrom-Json
+$localProgressFile = Join-Path $ProjectRoot "data\learning_progress.json"
+if (Test-Path $localProgressFile) {
+    $finalProgress = Get-Content $localProgressFile | ConvertFrom-Json
 }
 
 Write-Host ""
-Write-Host "📊 Final Summary:" -ForegroundColor Cyan
+Write-Host "Final Summary:" -ForegroundColor Cyan
 Write-Host "   Knowledge Base Folders: $finalFolders" -ForegroundColor Yellow
 Write-Host "   Learned Tools: $($finalProgress.Count)" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "🎉 Done! Your agent now has all the knowledge from Colab!" -ForegroundColor Green
-
+Write-Host "Done! Your agent now has all the knowledge from Colab!" -ForegroundColor Green

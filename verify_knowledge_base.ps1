@@ -1,13 +1,17 @@
 # Verify Knowledge Base Completeness
 # تحقق من اكتمال قاعدة المعرفة
 
-Write-Host "🔍 Verifying Knowledge Base" -ForegroundColor Cyan
+# Get script directory
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $ScriptDir
+
+Write-Host "Verifying Knowledge Base" -ForegroundColor Cyan
 Write-Host ""
 
 # Load essential tools
-$toolsFile = "data\essential_tools.json"
+$toolsFile = Join-Path $ProjectRoot "data\essential_tools.json"
 if (-not (Test-Path $toolsFile)) {
-    Write-Host "❌ essential_tools.json not found!" -ForegroundColor Red
+    Write-Host "ERROR: essential_tools.json not found!" -ForegroundColor Red
     exit 1
 }
 
@@ -22,7 +26,7 @@ foreach ($category in $essentialTools.PSObject.Properties.Name) {
     $toolsByCategory[$category] = $count
 }
 
-Write-Host "📚 Essential Tools Summary:" -ForegroundColor Yellow
+Write-Host "Essential Tools Summary:" -ForegroundColor Yellow
 foreach ($category in $toolsByCategory.Keys) {
     Write-Host "   $category`: $($toolsByCategory[$category]) tools" -ForegroundColor White
 }
@@ -30,28 +34,28 @@ Write-Host "   Total: $totalTools tools" -ForegroundColor Green
 Write-Host ""
 
 # Check progress
-$progressFile = "data\learning_progress.json"
+$progressFile = Join-Path $ProjectRoot "data\learning_progress.json"
 $learnedTools = @()
 if (Test-Path $progressFile) {
     $learnedTools = Get-Content $progressFile | ConvertFrom-Json
-    Write-Host "✅ Progress file found: $($learnedTools.Count) tools learned" -ForegroundColor Green
+    Write-Host "OK: Progress file found: $($learnedTools.Count) tools learned" -ForegroundColor Green
 } else {
-    Write-Host "⚠️  Progress file not found" -ForegroundColor Yellow
+    Write-Host "WARNING: Progress file not found" -ForegroundColor Yellow
 }
 
 # Check knowledge base folders
-$kbPath = "data\knowledge_base"
+$kbPath = Join-Path $ProjectRoot "data\knowledge_base"
 $kbFolders = @()
 if (Test-Path $kbPath) {
     $kbFolders = Get-ChildItem -Path $kbPath -Directory | ForEach-Object { $_.Name }
-    Write-Host "✅ Knowledge base found: $($kbFolders.Count) folders" -ForegroundColor Green
+    Write-Host "OK: Knowledge base found: $($kbFolders.Count) folders" -ForegroundColor Green
 } else {
-    Write-Host "❌ Knowledge base not found!" -ForegroundColor Red
+    Write-Host "ERROR: Knowledge base not found!" -ForegroundColor Red
     exit 1
 }
 
 Write-Host ""
-Write-Host "📊 Comparison:" -ForegroundColor Cyan
+Write-Host "Comparison:" -ForegroundColor Cyan
 Write-Host "   Essential Tools: $totalTools" -ForegroundColor Yellow
 Write-Host "   Learned (Progress): $($learnedTools.Count)" -ForegroundColor Yellow
 Write-Host "   Knowledge Base Folders: $($kbFolders.Count)" -ForegroundColor Yellow
@@ -78,26 +82,25 @@ $missingFromKB = $allEssentialTools | Where-Object {
 }
 
 if ($missingFromProgress.Count -eq 0 -and $missingFromKB.Count -eq 0) {
-    Write-Host "🎉 Perfect! All tools are learned and in knowledge base!" -ForegroundColor Green
+    Write-Host "Perfect! All tools are learned and in knowledge base!" -ForegroundColor Green
 } else {
     if ($missingFromProgress.Count -gt 0) {
-        Write-Host "⚠️  Missing from progress ($($missingFromProgress.Count)):" -ForegroundColor Yellow
+        Write-Host "WARNING: Missing from progress ($($missingFromProgress.Count)):" -ForegroundColor Yellow
         $missingFromProgress | ForEach-Object { Write-Host "   - $_" -ForegroundColor White }
     }
     
     if ($missingFromKB.Count -gt 0) {
-        Write-Host "⚠️  Missing from knowledge base ($($missingFromKB.Count)):" -ForegroundColor Yellow
+        Write-Host "WARNING: Missing from knowledge base ($($missingFromKB.Count)):" -ForegroundColor Yellow
         $missingFromKB | ForEach-Object { Write-Host "   - $_" -ForegroundColor White }
     }
 }
 
 Write-Host ""
-Write-Host "💡 Recommendation:" -ForegroundColor Cyan
+Write-Host "Recommendation:" -ForegroundColor Cyan
 if ($missingFromProgress.Count -gt 0 -or $missingFromKB.Count -gt 0) {
     Write-Host "   Run the auto-learner to complete missing tools:" -ForegroundColor Yellow
     Write-Host "   python src/tools/auto_learner.py" -ForegroundColor White
     Write-Host "   OR use Colab for faster learning!" -ForegroundColor White
 } else {
-    Write-Host "   ✅ Your agent is ready with all tools!" -ForegroundColor Green
+    Write-Host "   OK: Your agent is ready with all tools!" -ForegroundColor Green
 }
-

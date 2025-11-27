@@ -1,6 +1,6 @@
 # 🎓 Expert AI Agent - وكيل ذكاء اصطناعي خبير
 
-## 🌟 نظام متكامل مع 3 مستويات + 5 موديلات + 67+ أداة متخصصة
+## 🌟 نظام متكامل مع 3 مستويات + 5 موديلات + 120+ أداة متخصصة
 
 **A powerful, self-improving AI agent that runs locally on your server using Ollama.**
 
@@ -12,7 +12,7 @@
 
 - **🧠 Advanced ReAct Loop**: Multi-step reasoning with self-reflection
 - **🤖 Multi-Model Intelligence**: Auto-selects best model based on task complexity
-- **🛠️ 20+ Tools**: File operations, commands, web search, Docker, security scanning
+- **🛠️ 120+ Tools**: Data analysis, databases, cloud platforms, mobile dev, testing, security, and more
 - **💾 Continuous Learning**: SQLite-based memory system that improves over time
 - **🔒 Security First**: Risk assessment and explicit permission for every action
 - **🌐 Web Integration**: DuckDuckGo search and web scraping (no API keys needed)
