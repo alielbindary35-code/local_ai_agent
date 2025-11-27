@@ -1,5 +1,5 @@
 """
-Expert AI Agent - وكيل ذكاء اصطناعي خبير
+Expert AI Agent
 Advanced agent with:
 - Multi-model orchestration (auto-selects best model)
 - 100+ specialized tools
@@ -31,7 +31,6 @@ console = Console()
 class ExpertAgent:
     """
     Expert-Level AI Agent with advanced capabilities
-    وكيل ذكاء اصطناعي خبير مع قدرات متقدمة
     """
     
     def __init__(
@@ -857,8 +856,9 @@ class ExpertAgent:
                     console.print(Panel(str(e), title=f"❌ Execution Error: {tool_name}", border_style="red"))
         
         # === STEP 3: Fallback to function-style parsing ===
-        # Regex to find tool calls: tool_name(arg="val")
-        tool_pattern = r'(\w+)\((.*?)\)'
+        # Regex to find tool calls: tool_name(arg="val") or tool_name("arg1", "arg2")
+        # Use non-greedy match but handle nested quotes and parentheses
+        tool_pattern = r'(\w+)\(((?:[^()]|\([^()]*\))*)\)'
         matches = re.findall(tool_pattern, response)
         
         for tool_name, args_str in matches:
@@ -889,8 +889,23 @@ class ExpertAgent:
                             params[key] = val
                     
                     # 2. If no kwargs found, try positional args (strings between quotes)
+                    # Handle escaped quotes and multi-line strings
                     elif '"' in args_str or "'" in args_str:
-                        args_matches = re.findall(r'["\'](.*?)["\']', args_str)
+                        # More robust pattern that handles escaped quotes
+                        args_matches = []
+                        # Try to find quoted strings, handling escaped quotes
+                        quote_pattern = r'(?:"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')'
+                        quoted_matches = re.findall(quote_pattern, args_str)
+                        for match in quoted_matches:
+                            # Remove surrounding quotes and unescape
+                            content = match[1:-1]  # Remove first and last quote
+                            content = content.replace('\\"', '"').replace("\\'", "'")
+                            content = content.replace('\\n', '\n').replace('\\t', '\t')
+                            args_matches.append(content)
+                        
+                        # Fallback to simple pattern if above didn't work
+                        if not args_matches:
+                            args_matches = re.findall(r'["\'](.*?)["\']', args_str)
                         
                         # Map positional args to parameters based on tool name
                         if tool_name == "search_documentation":
@@ -936,9 +951,16 @@ class ExpertAgent:
                         
                         elif tool_name == "write_file":
                             if len(args_matches) >= 2:
+                                # Join all remaining args as content (in case content has commas or quotes)
+                                filepath = args_matches[0]
+                                # Content might be split across multiple matches, join them
+                                content = args_matches[1]
+                                if len(args_matches) > 2:
+                                    # If there are more args, they're likely part of the content
+                                    content = " ".join(args_matches[1:])
                                 params = {
-                                    "filepath": args_matches[0],
-                                    "content": args_matches[1]
+                                    "filepath": filepath,
+                                    "content": content
                                 }
                             elif len(args_matches) == 1:
                                 params = {"filepath": args_matches[0], "content": ""}
@@ -1246,7 +1268,7 @@ def main():
 [bold cyan]
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
-║          🎓 Expert AI Agent - وكيل خبير                  ║
+║          🎓 Expert AI Agent                  ║
 ║                                                           ║
 ║     Multi-Model • 100+ Tools • Online Learning           ║
 ║                                                           ║
