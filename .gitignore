@@ -6,3 +6,7 @@ venv/
 .vscode/
 *.log
 data/knowledge_base/snippets/
+data/learning_progress.json
+agent_memory.db
+data/agent_memory.db
+*.zip
