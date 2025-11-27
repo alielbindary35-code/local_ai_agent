@@ -1071,7 +1071,7 @@ CRITICAL INSTRUCTIONS:
    - write_file("filename.ext", "full file content here")
    - DO NOT just show code - ACTUALLY CREATE THE FILE using write_file!
    - Example: User asks "create a batch file to show date and time"
-     → You MUST call: write_file("show_date_time.bat", "@echo off\ndate /T\ntime /T\npause")
+     You MUST call: write_file("show_date_time.bat", "@echo off\\ndate /T\\ntime /T\\npause")
 
 3. **DO NOT JUST EXPLAIN**: Do not just explain what you would do - ACTUALLY DO IT by writing the tool call.
 
@@ -1100,22 +1100,22 @@ CRITICAL INSTRUCTIONS:
 
 10. **FILE CREATION EXAMPLES**:
     - User: "create a batch file to show date and time"
-      → You MUST call: write_file("show_date_time.bat", "@echo off\ndate /T\ntime /T\npause")
+      You MUST call: write_file("show_date_time.bat", "@echo off\\ndate /T\\ntime /T\\npause")
     
     - User: "create a Python script to calculate fibonacci"
-      → You MUST call: write_file("fibonacci.py", "def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(10))")
+      You MUST call: write_file("fibonacci.py", "def fibonacci(n):\\n    if n <= 1:\\n        return n\\n    return fibonacci(n-1) + fibonacci(n-2)\\n\\nprint(fibonacci(10))")
     
     - NEVER just show code without calling write_file!
 
 11. **PROJECT CREATION**: When user asks to create a project, use create_project tool:
     - User: "create a Python project called myapp"
-      → You MUST call: create_project("myapp", "python", {"include_tests": True, "include_docs": True})
+      You MUST call: create_project("myapp", "python", {{"include_tests": True, "include_docs": True}})
     
     - User: "create a web project"
-      → You MUST call: create_project("web_project", "web", {})
+      You MUST call: create_project("web_project", "web", {{}})
     
     - User: "create a React app called todo-app"
-      → You MUST call: create_project("todo-app", "react", {})
+      You MUST call: create_project("todo-app", "react", {{}})
     
     - For complex projects, you can combine:
       1. create_project("project_name", "project_type", options) - creates structure
@@ -1124,10 +1124,10 @@ CRITICAL INSTRUCTIONS:
 
 12. **DIRECTORY CREATION**: When user asks to create folders/directories:
     - User: "create a folder called data"
-      → You MUST call: create_directory("data")
+      You MUST call: create_directory("data")
     
     - User: "create folders for src, tests, docs"
-      → You MUST call: create_directory("src"), create_directory("tests"), create_directory("docs")
+      You MUST call: create_directory("src"), create_directory("tests"), create_directory("docs")
 
 13. **COMPLETE PROJECT WORKFLOW**: For complex requests like "create a full-stack app":
     - Step 1: create_project("app_name", "project_type", options) - creates base structure
