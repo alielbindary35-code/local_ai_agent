@@ -1,0 +1,132 @@
+======================================================================
+🤖 AUTOMATED TRAINING SESSION
+======================================================================
+Started: 2025-11-27 16:11:38
+======================================================================
+
+
+======================================================================
+Question 1/11: ما هو نظام التشغيل الذي أعمل عليه؟
+Phase: Phase 1: Basics
+Expected Tool: get_system_info
+======================================================================
+
+Response (46.74s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 2/11: اعرض لي محتويات المجلد الحالي
+Phase: Phase 1: Basics
+Expected Tool: list_dir
+======================================================================
+
+Response (36.30s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 3/11: اقرأ محتوى ملف README.md
+Phase: Phase 1: Basics
+Expected Tool: read_file
+======================================================================
+
+Response (40.26s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 4/11: ما هو استخدام الـ CPU والـ RAM الحالي؟
+Phase: Phase 1: Basics
+Expected Tool: monitor_resources
+======================================================================
+
+Response (57.21s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 5/11: ابحث عن ملفات بامتداد .xyz في المجلد الحالي
+Phase: Phase 2: Error Handling
+Expected Tool: search_files
+======================================================================
+
+Response (134.70s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 6/11: هل خدمة Ollama تعمل حالياً؟
+Phase: Phase 2: Error Handling
+Expected Tool: check_service_status
+======================================================================
+
+Response (57.13s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 7/11: ابحث في الإنترنت عن latest Python version 2024
+Phase: Phase 3: Complex Tasks
+Expected Tool: search_web
+======================================================================
+
+Response (76.12s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 8/11: احسب متوسط الأرقام: 10, 20, 30, 40, 50
+Phase: Phase 3: Complex Tasks
+Expected Tool: python_repl
+======================================================================
+
+Response (55.03s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 9/11: أنشئ ملف نصي جديد باسم test_output.txt واكتب فيه Hello from AI Agent
+Phase: Phase 3: Complex Tasks
+Expected Tool: write_file
+======================================================================
+
+Response (42.53s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 10/11: ما هي الملفات Python في هذا المجلد؟
+Phase: Phase 4: Intelligence
+Expected Tool: search_files
+======================================================================
+
+Response (63.92s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+Question 11/11: احسب مساحة القرص المتبقية بالجيجابايت
+Phase: Phase 4: Intelligence
+Expected Tool: get_system_info
+======================================================================
+
+Response (39.60s):
+Maximum iterations reached without finding a solution.
+
+
+======================================================================
+📊 TRAINING REPORT
+======================================================================
+Total Questions: 11
+Successful: 11
+Failed: 0
+Success Rate: 100.0%
+Total Time: 672.09s
+Average Time per Question: 61.10s
+
+Phase Breakdown:
+  Phase 1: Basics: 4/4 (100.0%)
+  Phase 2: Error Handling: 2/2 (100.0%)
+  Phase 3: Complex Tasks: 3/3 (100.0%)
+  Phase 4: Intelligence: 2/2 (100.0%)

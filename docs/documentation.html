@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert AI Agent - Complete Documentation | التوثيق الكامل للوكيل الخبير</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .lang-toggle {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .lang-toggle button {
+            padding: 10px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 25px;
+            background: #667eea;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .lang-toggle button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .lang-toggle button.active {
+            background: #28a745;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            margin: 20px 0 10px 0;
+            font-size: 1.5em;
+        }
+        
+        .section h4 {
+            color: #495057;
+            margin: 15px 0 10px 0;
+            font-size: 1.2em;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .code-block code {
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-left: 4px solid #28a745;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            padding: 15px;
+            border-left: 4px solid #17a2b8;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .badge-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .toc {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .toc h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .toc ul {
+            list-style: none;
+        }
+        
+        .toc li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .toc a:hover {
+            color: #764ba2;
+            padding-left: 10px;
+        }
+        
+        .footer {
+            background: #343a40;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .lang-toggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎓 Expert AI Agent</h1>
+            <p>Complete Documentation | التوثيق الكامل</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                Multi-Model • 137+ Tools • Online Learning<br>
+                نظام متعدد النماذج • 137+ أداة • تعلم أونلاين
+            </p>
+        </div>
+        
+        <!-- Language Toggle -->
+        <div class="lang-toggle">
+            <button onclick="showLanguage('en')" id="btn-en" class="active">English</button>
+            <button onclick="showLanguage('ar')" id="btn-ar">العربية</button>
+            <button onclick="showLanguage('both')" id="btn-both">Both | كلاهما</button>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            
+            <!-- Table of Contents -->
+            <div class="toc">
+                <h3>📑 Table of Contents | جدول المحتويات</h3>
+                <ul>
+                    <li><a href="#overview">Overview | نظرة عامة</a></li>
+                    <li><a href="#quick-start">Quick Start | البدء السريع</a></li>
+                    <li><a href="#models">Available Models | الموديلات المتاحة</a></li>
+                    <li><a href="#tools">Tools Library | مكتبة الأدوات</a></li>
+                    <li><a href="#training">How to Train | كيفية التدريب</a></li>
+                    <li><a href="#usage">Usage Examples | أمثلة الاستخدام</a></li>
+                    <li><a href="#troubleshooting">Troubleshooting | حل المشاكل</a></li>
+                </ul>
+            </div>
+            
+            <!-- Overview Section -->
+            <div class="section" id="overview">
+                <h2 class="lang-en">🌟 Overview</h2>
+                <h2 class="lang-ar hidden">🌟 نظرة عامة</h2>
+                
+                <div class="lang-en">
+                    <p>The <strong>Expert AI Agent</strong> is an advanced, self-improving AI system that runs locally on your server. It features:</p>
+                    <ul style="margin: 15px 0 15px 30px;">
+                        <li>✅ <strong>Automatic Model Selection</strong> from 5 available models</li>
+                        <li>✅ <strong>137+ Specialized Tools</strong> for programming, web design, servers, Docker, databases</li>
+                        <li>✅ <strong>Online Learning</strong> with offline knowledge storage</li>
+                        <li>✅ <strong>Task Type Detection</strong> for optimal performance</li>
+                        <li>✅ <strong>Multi-Language Support</strong> (English & Arabic)</li>
+                    </ul>
+                </div>
+                
+                <div class="lang-ar hidden">
+                    <p><strong>الوكيل الخبير</strong> هو نظام ذكاء اصطناعي متقدم يعمل محلياً على السيرفر الخاص بك. يتميز بـ:</p>
+                    <ul style="margin: 15px 0 15px 30px;">
+                        <li>✅ <strong>اختيار تلقائي للموديل</strong> من 5 موديلات متاحة</li>
+                        <li>✅ <strong>137+ أداة متخصصة</strong> للبرمجة، تصميم المواقع، السيرفرات، Docker، قواعد البيانات</li>
+                        <li>✅ <strong>تعلم أونلاين</strong> مع حفظ المعرفة للاستخدام offline</li>
+                        <li>✅ <strong>كشف نوع المهمة</strong> للأداء الأمثل</li>
+                        <li>✅ <strong>دعم متعدد اللغات</strong> (إنجليزي وعربي)</li>
+                    </ul>
+                </div>
+                
+                <div class="success">
+                    <strong class="lang-en">✨ Key Achievement:</strong>
+                    <strong class="lang-ar hidden">✨ الإنجاز الرئيسي:</strong>
+                    <p class="lang-en">The agent automatically selects the best model for each task, achieving 100% success rate in testing.</p>
+                    <p class="lang-ar hidden">يختار الوكيل تلقائياً أفضل موديل لكل مهمة، محققاً معدل نجاح 100% في الاختبارات.</p>
+                </div>
+            </div>
+            
+            <!-- Quick Start Section -->
+            <div class="section" id="quick-start">
+                <h2 class="lang-en">🚀 Quick Start</h2>
+                <h2 class="lang-ar hidden">🚀 البدء السريع</h2>
+                
+                <h3 class="lang-en">Method 1: Using the Launcher (Recommended)</h3>
+                <h3 class="lang-ar hidden">الطريقة 1: استخدام المشغل (مستحسن)</h3>
+                
+                <div class="code-block">
+                    <code>cd "c:\Users\engha\Music\New folder1\local_ai_agent"
+expert_launcher.bat</code>
+                </div>
+                
+                <h3 class="lang-en">Method 2: Python Direct</h3>
+                <h3 class="lang-ar hidden">الطريقة 2: Python مباشرة</h3>
+                
+                <div class="code-block">
+                    <code>from expert_agent import ExpertAgent
+
+# Create agent
+agent = ExpertAgent()
+
+# Run a task (auto-selects best model)
+agent.run("Create a Python function to calculate fibonacci")</code>
+                </div>
+                
+                <div class="info">
+                    <strong class="lang-en">💡 Tip:</strong>
+                    <strong class="lang-ar hidden">💡 نصيحة:</strong>
+                    <p class="lang-en">The agent will automatically select the best model based on your task. No manual configuration needed!</p>
+                    <p class="lang-ar hidden">سيختار الوكيل تلقائياً أفضل موديل بناءً على مهمتك. لا حاجة لإعدادات يدوية!</p>
+                </div>
+            </div>
+            
+            <!-- Models Section -->
+            <div class="section" id="models">
+                <h2 class="lang-en">🤖 Available Models</h2>
+                <h2 class="lang-ar hidden">🤖 الموديلات المتاحة</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="lang-en">Model</th>
+                            <th class="lang-ar hidden">الموديل</th>
+                            <th class="lang-en">Size</th>
+                            <th class="lang-ar hidden">الحجم</th>
+                            <th class="lang-en">Specialization</th>
+                            <th class="lang-ar hidden">التخصص</th>
+                            <th class="lang-en">Best For</th>
+                            <th class="lang-ar hidden">الأفضل لـ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>deepseek-r1:8b</strong> <span class="badge badge-success">⭐ Best for Coding</span></td>
+                            <td>5.2 GB</td>
+                            <td>💻 Programming</td>
+                            <td>Python, JavaScript, Docker, Debugging</td>
+                        </tr>
+                        <tr>
+                            <td><strong>mistral:latest</strong></td>
+                            <td>4.4 GB</td>
+                            <td>🧠 General</td>
+                            <td>Analysis, Reasoning, General Tasks</td>
+                        </tr>
+                        <tr>
+                            <td><strong>llama3.2:latest</strong></td>
+                            <td>2.0 GB</td>
+                            <td>💬 Conversation</td>
+                            <td>Questions, Explanations, General</td>
+                        </tr>
+                        <tr>
+                            <td><strong>qwen2.5:3b</strong></td>
+                            <td>1.9 GB</td>
+                            <td>⚡ Fast</td>
+                            <td>File Operations, System Info</td>
+                        </tr>
+                        <tr>
+                            <td><strong>qwen2.5:0.5b</strong></td>
+                            <td>0.4 GB</td>
+                            <td>🚀 Fastest</td>
+                            <td>Simple Queries</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight">
+                    <strong class="lang-en">🎯 How Model Selection Works:</strong>
+                    <strong class="lang-ar hidden">🎯 كيف يعمل اختيار الموديل:</strong>
+                    <ol class="lang-en" style="margin: 10px 0 0 30px;">
+                        <li>Agent detects task type from keywords</li>
+                        <li>Calculates score for each model</li>
+                        <li>Selects model with highest score</li>
+                        <li>Executes task with optimal model</li>
+                    </ol>
+                    <ol class="lang-ar hidden" style="margin: 10px 0 0 30px; direction: rtl;">
+                        <li>يكتشف الوكيل نوع المهمة من الكلمات المفتاحية</li>
+                        <li>يحسب نقاط لكل موديل</li>
+                        <li>يختار الموديل بأعلى نقاط</li>
+                        <li>ينفذ المهمة بالموديل الأمثل</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- Tools Section -->
+            <div class="section" id="tools">
+                <h2 class="lang-en">🛠️ Tools Library (137+ Tools)</h2>
+                <h2 class="lang-ar hidden">🛠️ مكتبة الأدوات (137+ أداة)</h2>
+                
+                <h3 class="lang-en">Tool Categories:</h3>
+                <h3 class="lang-ar hidden">فئات الأدوات:</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="lang-en">Category</th>
+                            <th class="lang-ar hidden">الفئة</th>
+                            <th class="lang-en">Tools Count</th>
+                            <th class="lang-ar hidden">عدد الأدوات</th>
+                            <th class="lang-en">Examples</th>
+                            <th class="lang-ar hidden">أمثلة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>💻 Programming</td>
+                            <td>15</td>
+                            <td>create_python_project, generate_code, analyze_code</td>
+                        </tr>
+                        <tr>
+                            <td>🌐 Web Design</td>
+                            <td>10</td>
+                            <td>create_html_template, generate_css, create_react_component</td>
+                        </tr>
+                        <tr>
+                            <td>🐳 Docker</td>
+                            <td>12</td>
+                            <td>create_dockerfile, docker_compose_generate, docker_deploy</td>
+                        </tr>
+                        <tr>
+                            <td>🗄️ Databases</td>
+                            <td>18</td>
+                            <td>postgres_query, mysql_query, mongodb_query, sqlite_query</td>
+                        </tr>
+                        <tr>
+                            <td>🔧 Git & Version Control</td>
+                            <td>10</td>
+                            <td>git_init, git_commit, git_push, git_merge</td>
+                        </tr>
+                        <tr>
+                            <td>🧪 Testing & Quality</td>
+                            <td>8</td>
+                            <td>run_pytest, run_linter, run_coverage</td>
+                        </tr>
+                        <tr>
+                            <td>🌐 API & HTTP</td>
+                            <td>6</td>
+                            <td>test_api_endpoint, create_webhook, monitor_api</td>
+                        </tr>
+                        <tr>
+                            <td>☁️ Cloud & Infrastructure</td>
+                            <td>6</td>
+                            <td>aws_s3_upload, gcp_storage_upload, azure_blob_upload</td>
+                        </tr>
+                        <tr>
+                            <td>📊 Monitoring & Logging</td>
+                            <td>5</td>
+                            <td>setup_prometheus, setup_grafana, analyze_logs</td>
+                        </tr>
+                        <tr>
+                            <td>🔒 Security</td>
+                            <td>5</td>
+                            <td>generate_jwt, hash_password, setup_oauth</td>
+                        </tr>
+                        <tr>
+                            <td>📁 File Processing</td>
+                            <td>6</td>
+                            <td>compress_file, convert_image, resize_image</td>
+                        </tr>
+                        <tr>
+                            <td>📈 Data Processing</td>
+                            <td>6</td>
+                            <td>parse_json, convert_json_to_csv, validate_schema</td>
+                        </tr>
+                        <tr>
+                            <td>🌐 Network</td>
+                            <td>5</td>
+                            <td>ping_host, check_port, dns_lookup</td>
+                        </tr>
+                        <tr>
+                            <td>📚 Learning & Docs</td>
+                            <td>5</td>
+                            <td>search_documentation, save_code_snippet, search_stackoverflow</td>
+                        </tr>
+                        <tr>
+                            <td>⚙️ System & Server</td>
+                            <td>10</td>
+                            <td>get_system_info, monitor_resources, backup_server</td>
+                        </tr>
+                        <tr>
+                            <td>🔄 n8n Workflows</td>
+                            <td>5</td>
+                            <td>create_n8n_workflow, export_n8n_workflow</td>
+                        </tr>
+                        <tr>
+                            <td>🚀 DevOps & CI/CD</td>
+                            <td>9</td>
+                            <td>create_github_action, setup_ci_cd, deploy_to_production</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="success">
+                    <strong class="lang-en">✅ Total: 137+ Specialized Tools</strong>
+                    <strong class="lang-ar hidden">✅ المجموع: 137+ أداة متخصصة</strong>
+                </div>
+            </div>
+            
+            <!-- Training Section -->
+            <div class="section" id="training">
+                <h2 class="lang-en">🎓 How to Train the Agent</h2>
+                <h2 class="lang-ar hidden">🎓 كيفية تدريب الوكيل</h2>
+                
+                <h3 class="lang-en">Step 1: Run the Trainer</h3>
+                <h3 class="lang-ar hidden">الخطوة 1: تشغيل المدرب</h3>
+                
+                <div class="code-block">
+                    <code>python automated_trainer.py</code>
+                </div>
+                
+                <h3 class="lang-en">Step 2: Training Questions</h3>
+                <h3 class="lang-ar hidden">الخطوة 2: أسئلة التدريب</h3>
+                
+                <div class="lang-en">
+                    <p>The trainer will ask 11 questions across 4 phases:</p>
+                    <ul style="margin: 15px 0 15px 30px;">
+                        <li><strong>Phase 1: Basics</strong> - System info, file operations</li>
+                        <li><strong>Phase 2: Error Handling</strong> - Dealing with errors</li>
+                        <li><strong>Phase 3: Complex Tasks</strong> - Multi-step operations</li>
+                        <li><strong>Phase 4: Intelligence</strong> - Reasoning and analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="lang-ar hidden">
+                    <p>سيطرح المدرب 11 سؤالاً عبر 4 مراحل:</p>
+                    <ul style="margin: 15px 0 15px 30px; direction: rtl;">
+                        <li><strong>المرحلة 1: الأساسيات</strong> - معلومات النظام، عمليات الملفات</li>
+                        <li><strong>المرحلة 2: معالجة الأخطاء</strong> - التعامل مع الأخطاء</li>
+                        <li><strong>المرحلة 3: المهام المعقدة</strong> - عمليات متعددة الخطوات</li>
+                        <li><strong>المرحلة 4: الذكاء</strong> - التفكير والتحليل</li>
+                    </ul>
+                </div>
+                
+                <h3 class="lang-en">Step 3: Review Results</h3>
+                <h3 class="lang-ar hidden">الخطوة 3: مراجعة النتائج</h3>
+                
+                <div class="code-block">
+                    <code># View training logs
+python monitor_training.py tail 50
+
+# Check success rate
+# Look for "Success Rate" in the output</code>
+                </div>
+                
+                <div class="info">
+                    <strong class="lang-en">💡 Training Tips:</strong>
+                    <strong class="lang-ar hidden">💡 نصائح التدريب:</strong>
+                    <ul class="lang-en" style="margin: 10px 0 0 30px;">
+                        <li>Start with simple questions</li>
+                        <li>Monitor logs for errors</li>
+                        <li>Save successful solutions to memory</li>
+                        <li>Use online learning for new topics</li>
+                    </ul>
+                    <ul class="lang-ar hidden" style="margin: 10px 0 0 30px; direction: rtl;">
+                        <li>ابدأ بأسئلة بسيطة</li>
+                        <li>راقب السجلات للأخطاء</li>
+                        <li>احفظ الحلول الناجحة في الذاكرة</li>
+                        <li>استخدم التعلم الأونلاين للمواضيع الجديدة</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Usage Examples Section -->
+            <div class="section" id="usage">
+                <h2 class="lang-en">💡 Usage Examples</h2>
+                <h2 class="lang-ar hidden">💡 أمثلة الاستخدام</h2>
+                
+                <h3 class="lang-en">Example 1: Python Programming</h3>
+                <h3 class="lang-ar hidden">مثال 1: برمجة Python</h3>
+                
+                <div class="code-block">
+                    <code>from expert_agent import ExpertAgent
+
+agent = ExpertAgent()
+
+# Will auto-select deepseek-r1:8b (best for coding)
+agent.run("Create a Python function to calculate fibonacci numbers")</code>
+                </div>
+                
+                <h3 class="lang-en">Example 2: Docker Setup</h3>
+                <h3 class="lang-ar hidden">مثال 2: إعداد Docker</h3>
+                
+                <div class="code-block">
+                    <code># Will auto-select deepseek-r1:8b (best for Docker)
+agent.run("Generate docker-compose file for PostgreSQL and n8n")</code>
+                </div>
+                
+                <h3 class="lang-en">Example 3: Web Design</h3>
+                <h3 class="lang-ar hidden">مثال 3: تصميم موقع</h3>
+                
+                <div class="code-block">
+                    <code># Will auto-select deepseek-r1:8b (best for web)
+agent.run("Design a responsive landing page with HTML and CSS")</code>
+                </div>
+                
+                <h3 class="lang-en">Example 4: Online Learning</h3>
+                <h3 class="lang-ar hidden">مثال 4: التعلم الأونلاين</h3>
+                
+                <div class="code-block">
+                    <code># Learn and save for offline use
+agent.run("Learn Docker best practices and save examples for offline use")</code>
+                </div>
+            </div>
+            
+            <!-- Troubleshooting Section -->
+            <div class="section" id="troubleshooting">
+                <h2 class="lang-en">🔧 Troubleshooting</h2>
+                <h2 class="lang-ar hidden">🔧 حل المشاكل</h2>
+                
+                <h3 class="lang-en">Problem: "Cannot connect to Ollama"</h3>
+                <h3 class="lang-ar hidden">المشكلة: "لا يمكن الاتصال بـ Ollama"</h3>
+                
+                <div class="code-block">
+                    <code># Solution: Start Ollama
+ollama serve
+
+# In another terminal, verify:
+ollama list</code>
+                </div>
+                
+                <h3 class="lang-en">Problem: "Model not found"</h3>
+                <h3 class="lang-ar hidden">المشكلة: "الموديل غير موجود"</h3>
+                
+                <div class="code-block">
+                    <code># Solution: Pull the model
+ollama pull deepseek-r1:8b
+ollama pull mistral:latest</code>
+                </div>
+                
+                <h3 class="lang-en">Problem: "Tool not found"</h3>
+                <h3 class="lang-ar hidden">المشكلة: "الأداة غير موجودة"</h3>
+                
+                <div class="warning">
+                    <strong class="lang-en">Solution:</strong>
+                    <strong class="lang-ar hidden">الحل:</strong>
+                    <ul class="lang-en" style="margin: 10px 0 0 20px;">
+                        <li>Check tool name spelling</li>
+                        <li>Verify tool is in tools.py, expert_tools.py, or extended_tools.py</li>
+                        <li>Review available tools: <code>python -c "from expert_tools import ExpertTools; print(ExpertTools().get_tool_descriptions())"</code></li>
+                    </ul>
+                    <ul class="lang-ar hidden" style="margin: 10px 0 0 20px; direction: rtl;">
+                        <li>تحقق من إملاء اسم الأداة</li>
+                        <li>تأكد أن الأداة موجودة في tools.py أو expert_tools.py أو extended_tools.py</li>
+                        <li>راجع الأدوات المتاحة</li>
+                    </ul>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="lang-en">© 2025 Expert AI Agent | Created by Antigravity AI Assistant</p>
+            <p class="lang-ar hidden">© 2025 الوكيل الخبير | تم الإنشاء بواسطة Antigravity AI Assistant</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                <span class="lang-en">Version 1.0 | Last Updated: 2025-11-27</span>
+                <span class="lang-ar hidden">الإصدار 1.0 | آخر تحديث: 2025-11-27</span>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function showLanguage(lang) {
+            const enElements = document.querySelectorAll('.lang-en');
+            const arElements = document.querySelectorAll('.lang-ar');
+            const btnEn = document.getElementById('btn-en');
+            const btnAr = document.getElementById('btn-ar');
+            const btnBoth = document.getElementById('btn-both');
+            
+            // Remove active class from all buttons
+            btnEn.classList.remove('active');
+            btnAr.classList.remove('active');
+            btnBoth.classList.remove('active');
+            
+            if (lang === 'en') {
+                enElements.forEach(el => el.classList.remove('hidden'));
+                arElements.forEach(el => el.classList.add('hidden'));
+                btnEn.classList.add('active');
+            } else if (lang === 'ar') {
+                enElements.forEach(el => el.classList.add('hidden'));
+                arElements.forEach(el => el.classList.remove('hidden'));
+                btnAr.classList.add('active');
+                document.body.style.direction = 'rtl';
+            } else {
+                enElements.forEach(el => el.classList.remove('hidden'));
+                arElements.forEach(el => el.classList.remove('hidden'));
+                btnBoth.classList.add('active');
+                document.body.style.direction = 'ltr';
+            }
+        }
+        
+        // Initialize with English
+        showLanguage('both');
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+    "data_analysis": [
+        "Pandas",
+        "NumPy",
+        "Matplotlib",
+        "Seaborn",
+        "Scikit-learn",
+        "TensorFlow",
+        "PyTorch",
+        "Jupyter Notebooks",
+        "Apache Spark",
+        "Power BI",
+        "Tableau"
+    ],
+    "databases": [
+        "PostgreSQL",
+        "MongoDB",
+        "Redis",
+        "MySQL",
+        "SQLite",
+        "Cassandra",
+        "Elasticsearch",
+        "Neo4j",
+        "Firebase"
+    ],
+    "devops_and_docker": [
+        "Docker",
+        "Kubernetes",
+        "Docker Compose",
+        "Jenkins",
+        "GitLab CI",
+        "Terraform",
+        "Ansible",
+        "Prometheus",
+        "Grafana"
+    ],
+    "backend": [
+        "FastAPI",
+        "Django",
+        "Flask",
+        "Node.js",
+        "Express.js",
+        "NestJS"
+    ],
+    "frontend": [
+        "React",
+        "Vue.js",
+        "Next.js",
+        "Tailwind CSS",
+        "TypeScript"
+    ]
+}
