@@ -4,14 +4,29 @@
 Write-Host "🔄 Merging Colab Knowledge Base with Local" -ForegroundColor Cyan
 Write-Host ""
 
-# Check if zip exists in Downloads
-$zipPath = "$HOME\Downloads\knowledge_base.zip"
-if (-not (Test-Path $zipPath)) {
-    Write-Host "❌ knowledge_base.zip not found in Downloads folder" -ForegroundColor Red
-    Write-Host "Expected location: $zipPath" -ForegroundColor Yellow
+# Check if zip exists in Downloads (try both names)
+$zipPath = $null
+$possibleNames = @(
+    "$HOME\Downloads\knowledge_base_complete.zip",
+    "$HOME\Downloads\knowledge_base.zip"
+)
+
+foreach ($name in $possibleNames) {
+    if (Test-Path $name) {
+        $zipPath = $name
+        break
+    }
+}
+
+if (-not $zipPath) {
+    Write-Host "❌ Knowledge base zip not found in Downloads folder" -ForegroundColor Red
+    Write-Host "Looking for:" -ForegroundColor Yellow
+    foreach ($name in $possibleNames) {
+        Write-Host "  - $name" -ForegroundColor Yellow
+    }
     Write-Host ""
     Write-Host "Please download the zip file from Colab first, or specify the path:" -ForegroundColor Yellow
-    $customPath = Read-Host "Enter path to knowledge_base.zip (or press Enter to exit)"
+    $customPath = Read-Host "Enter path to knowledge_base zip (or press Enter to exit)"
     if ($customPath -and (Test-Path $customPath)) {
         $zipPath = $customPath
     } else {
@@ -89,8 +104,41 @@ Write-Host "🧹 Cleaning up temporary files..." -ForegroundColor Cyan
 Remove-Item -Path $tempDir -Recurse -Force
 Write-Host "✅ Cleanup complete" -ForegroundColor Green
 
+# Merge progress file if exists
+$progressFile = "$HOME\Downloads\learning_progress.json"
+if (Test-Path $progressFile) {
+    Write-Host ""
+    Write-Host "📊 Merging progress file..." -ForegroundColor Cyan
+    
+    $localProgress = @()
+    $localProgressFile = "data\learning_progress.json"
+    if (Test-Path $localProgressFile) {
+        $localProgress = Get-Content $localProgressFile | ConvertFrom-Json
+    }
+    
+    $colabProgress = Get-Content $progressFile | ConvertFrom-Json
+    
+    # Merge (Colab takes priority, but keep unique local items)
+    $mergedProgress = ($localProgress + $colabProgress) | Select-Object -Unique | Sort-Object
+    
+    $mergedProgress | ConvertTo-Json | Set-Content $localProgressFile
+    Write-Host "✅ Progress merged: $($mergedProgress.Count) tools learned" -ForegroundColor Green
+}
+
 Write-Host ""
 Write-Host "📂 Your local knowledge base is now at: $(Resolve-Path $localKb)" -ForegroundColor Cyan
+
+# Final summary
+$finalFolders = (Get-ChildItem -Path $localKb -Directory).Count
+$finalProgress = @()
+if (Test-Path "data\learning_progress.json") {
+    $finalProgress = Get-Content "data\learning_progress.json" | ConvertFrom-Json
+}
+
+Write-Host ""
+Write-Host "📊 Final Summary:" -ForegroundColor Cyan
+Write-Host "   Knowledge Base Folders: $finalFolders" -ForegroundColor Yellow
+Write-Host "   Learned Tools: $($finalProgress.Count)" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "🎉 Done! Your agent now has all the knowledge from Colab!" -ForegroundColor Green
 

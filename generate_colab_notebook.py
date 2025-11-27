@@ -96,7 +96,7 @@ def generate_notebook():
           },
           "outputs": [],
           "source": [
-            "# @title 🎓 Run Auto-Learner\n",
+            "# @title 🎓 Run Auto-Learner (Learn ALL Tools)\n",
             "\n",
             "# Ensure project root is in Python path\n",
             "import sys\n",
@@ -104,11 +104,12 @@ def generate_notebook():
             "if os.getcwd() not in sys.path:\n",
             "    sys.path.insert(0, os.getcwd())\n",
             "\n",
-            "# This will learn all tools in data/essential_tools.json\n",
+            "# This will learn ALL tools in data/essential_tools.json\n",
+            "# Time: ~10-15 minutes for all 67 tools\n",
             "from src.tools.auto_learner import AutoLearner\n",
             "\n",
             "learner = AutoLearner()\n",
-            "learner.learn_all()"
+            "learner.learn_all()  # Learns ALL 67+ tools!"
           ]
         },
         {
@@ -119,16 +120,29 @@ def generate_notebook():
           },
           "outputs": [],
           "source": [
-            "# @title 💾 Download Knowledge Base\n",
+            "# @title 💾 Download Complete Knowledge Base\n",
             "\n",
             "import shutil\n",
+            "import json\n",
+            "from pathlib import Path\n",
             "from google.colab import files\n",
             "\n",
             "# Zip the knowledge base\n",
-            "shutil.make_archive('knowledge_base', 'zip', 'data/knowledge_base')\n",
+            "shutil.make_archive('knowledge_base_complete', 'zip', 'data/knowledge_base')\n",
             "\n",
-            "# Download\n",
-            "files.download('knowledge_base.zip')"
+            "# Also save progress file\n",
+            "if Path('data/learning_progress.json').exists():\n",
+            "    shutil.copy('data/learning_progress.json', 'learning_progress.json')\n",
+            "    files.download('learning_progress.json')\n",
+            "\n",
+            "# Download knowledge base\n",
+            "files.download('knowledge_base_complete.zip')\n",
+            "\n",
+            "# Show summary\n",
+            "if Path('data/learning_progress.json').exists():\n",
+            "    progress = json.loads(Path('data/learning_progress.json').read_text())\n",
+            "    print(f\"✅ Downloaded {len(progress)} learned tools!\")\n",
+            "    print(f\"📦 Knowledge base ready for merge!\")"
           ]
         }
       ]

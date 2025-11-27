@@ -1,21 +1,21 @@
 # Fast Learning Summary: Docker
 
-**Topics Covered**: containers, images, docker-compose, volumes, networking
+**Topics Covered**: overview, key-features, installation, best-practices, configuration, deployment, cli-commands
 
-**Total Sources**: 35
+**Total Sources**: 31
 
 ### SEARCH (15 items)
-- [Get started | Docker Docs](https://docs.docker.com/get-started/)
-- [Part 1: Containerize an application | Docker Docs](https://docs.docker.com/get-started/workshop/02_our_app/)
-- [What is Docker? | Docker Docs](https://docs.docker.com/get-started/docker-overview/)
+- [开发者们，Docker到底是什么，能干什么？ - 知乎](https://www.zhihu.com/question/600292294/answers/updated)
+- [如何通俗解释Docker是什么？ - 知乎](https://www.zhihu.com/question/28300645)
+- [AutoDL上是不是不能运行docker? - 知乎](https://www.zhihu.com/question/1898998110744720648)
 
-### DOCS (5 items)
-- [Docker Official Documentation - containers](https://docs.docker.com/search?q=containers)
-- [Docker Official Documentation - images](https://docs.docker.com/search?q=images)
-- [Docker Official Documentation - docker-compose](https://docs.docker.com/search?q=docker-compose)
+### DOCS (7 items)
+- [Docker Official Documentation - overview](https://docs.docker.com/search?q=overview)
+- [Docker Official Documentation - key-features](https://docs.docker.com/search?q=key-features)
+- [Docker Official Documentation - installation](https://docs.docker.com/search?q=installation)
 
-### GITHUB (15 items)
-- [devops-exercises](https://github.com/bregman-arie/devops-exercises)
-- [moby](https://github.com/moby/moby)
-- [Docker-OSX](https://github.com/sickcodes/Docker-OSX)
+### GITHUB (9 items)
+- [redesigned-pancake](https://github.com/Sfedfcv/redesigned-pancake)
+- [docker-volume-rclone](https://github.com/sapk/docker-volume-rclone)
+- [minecraft-overviewer](https://github.com/mide/minecraft-overviewer)
 
