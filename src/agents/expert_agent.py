@@ -1050,38 +1050,71 @@ class ExpertAgent:
         if not tool_executed:
             # If no tool was detected, try to extract code and create file automatically
             # Check if user asked to create a file/script
-            file_creation_keywords = ["create", "write", "make", "generate", "script", "file", "program", "code"]
+            file_creation_keywords = ["create", "write", "make", "generate", "script", "file", "program", "code", "want", "need"]
             if any(keyword in user_input.lower() for keyword in file_creation_keywords):
-                # Try to extract Python code from response
-                code_blocks = re.findall(r'```(?:python)?\s*\n(.*?)```', response, re.DOTALL)
-                if not code_blocks:
-                    # Try to find code without markdown
-                    # Look for import statements or def/class patterns
-                    code_pattern = r'(import\s+\w+|def\s+\w+|class\s+\w+)(.*?)(?=\n\n|\n[A-Z]|\Z)'
-                    code_matches = re.findall(code_pattern, response, re.DOTALL)
-                    if code_matches:
-                        # Reconstruct code from matches
-                        code_blocks = [''.join(code_matches)]
+                # Try multiple methods to extract code
+                code_content = None
                 
+                # Method 1: Try to extract from markdown code blocks
+                code_blocks = re.findall(r'```(?:python)?\s*\n(.*?)```', response, re.DOTALL)
                 if code_blocks:
+                    code_content = code_blocks[0].strip()
+                
+                # Method 2: Try to find code without markdown (look for import/def/class)
+                if not code_content:
+                    # Find everything from first import/def/class to end or next section
+                    code_match = re.search(r'(import\s+\w+.*?)(?=\n\n(?:[A-Z]|To use|The program|Would you)|$)', response, re.DOTALL)
+                    if code_match:
+                        code_content = code_match.group(1).strip()
+                
+                # Method 3: If response contains Python code patterns, extract everything that looks like code
+                if not code_content:
+                    # Look for lines that start with import, def, class, if, for, while, etc.
+                    lines = response.split('\n')
+                    code_lines = []
+                    in_code_block = False
+                    for line in lines:
+                        stripped = line.strip()
+                        # Start collecting if we see Python keywords
+                        if any(stripped.startswith(kw) for kw in ['import', 'def ', 'class ', 'if ', 'for ', 'while ', 'try:', 'except', 'return', 'print(']):
+                            in_code_block = True
+                        # Stop if we hit explanatory text
+                        if in_code_block and stripped and not any(c in stripped for c in ['(', ')', '[', ']', '=', ':', ',']) and len(stripped) > 50 and not stripped.startswith(('import', 'def', 'class', 'if', 'for', 'while', 'try', 'except', 'return', 'print', '#')):
+                            # Might be explanatory text, but continue if it looks like code
+                            if not any(word in stripped.lower() for word in ['the', 'this', 'that', 'will', 'should', 'would', 'can', 'may']):
+                                code_lines.append(line)
+                            else:
+                                break
+                        elif in_code_block:
+                            code_lines.append(line)
+                    
+                    if code_lines:
+                        code_content = '\n'.join(code_lines).strip()
+                
+                if code_content:
                     # Determine filename from user request or use default
                     filename = "script.py"
-                    if "math" in user_input.lower() or "calculator" in user_input.lower():
+                    if "math" in user_input.lower() or "calculator" in user_input.lower() or "kids" in user_input.lower():
                         filename = "math_helper.py"
                     elif "fibonacci" in user_input.lower():
                         filename = "fibonacci.py"
                     else:
-                        # Try to extract filename from response
-                        filename_match = re.search(r'(?:save|create|write|file|as)\s+(\w+\.\w+)', user_input.lower())
+                        # Try to extract filename from response or user input
+                        filename_match = re.search(r'(?:save|create|write|file|as|called)\s+(\w+\.\w+)', user_input.lower())
                         if filename_match:
                             filename = filename_match.group(1)
+                        # Also check response
+                        else:
+                            filename_match = re.search(r'(\w+\.py)', response.lower())
+                            if filename_match:
+                                filename = filename_match.group(1)
                     
                     console.print(f"[bold green]🔧 Auto-creating file: {filename}[/bold green]")
-                    code_content = code_blocks[0].strip()
                     result = self.tools.write_file(filename, code_content)
                     console.print(Panel(str(result), title="✅ File Created", border_style="green"))
                     final_response = f"✅ Created {filename} with the requested code.\n\n{result}"
                     tool_executed = True
+                    tools_executed_count += 1
             
             # If no tool was detected by regex, check for specific keywords
             if not tool_executed and "read_knowledge_base" in response and "n8n" in user_input.lower():
@@ -1208,8 +1241,11 @@ CRITICAL INSTRUCTIONS:
 2. **FOR FILE CREATION**: When user asks to create ANY file (batch, Python, text, etc.), you MUST use write_file tool:
    - write_file("filename.ext", "full file content here")
    - DO NOT just show code - ACTUALLY CREATE THE FILE using write_file!
+   - CRITICAL: If the user says "create a script", "make a file", "write a program", etc., you MUST call write_file immediately!
    - Example: User asks "create a batch file to show date and time"
      You MUST call: write_file("show_date_time.bat", "@echo off\\ndate /T\\ntime /T\\npause")
+   - Example: User asks "i want one python script that can take inputs"
+     You MUST call: write_file("script.py", "import sys\\n\\ndef main():\\n    # code here\\n    pass\\n\\nif __name__ == '__main__':\\n    main()")
 
 3. **DO NOT JUST EXPLAIN**: Do not just explain what you would do - ACTUALLY DO IT by writing the tool call.
 
