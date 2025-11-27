@@ -1059,34 +1059,53 @@ AVAILABLE TOOLS:
 USER REQUEST: {user_input}
 
 CRITICAL INSTRUCTIONS:
-1. **MUST EXECUTE TOOLS**: If the user asks you to learn, save, search, or perform any action, you MUST actually call the tool by writing it in this exact format:
+1. **MUST EXECUTE TOOLS**: If the user asks you to learn, save, search, create files, or perform any action, you MUST actually call the tool by writing it in this exact format:
+   write_file("filename.bat", "@echo off\ndate /T\ntime /T")
+   write_file("script.py", "print('Hello')")
    learn_new_technology("TechnologyName", ["topic1", "topic2"])
    read_knowledge_base("TechnologyName")
    search_documentation("TechnologyName", "query")
    update_knowledge_base("TechnologyName", "content to save", "filename.md", append=False)
 
-2. **DO NOT JUST EXPLAIN**: Do not just explain what you would do - ACTUALLY DO IT by writing the tool call.
+2. **FOR FILE CREATION**: When user asks to create ANY file (batch, Python, text, etc.), you MUST use write_file tool:
+   - write_file("filename.ext", "full file content here")
+   - DO NOT just show code - ACTUALLY CREATE THE FILE using write_file!
+   - Example: User asks "create a batch file to show date and time"
+     → You MUST call: write_file("show_date_time.bat", "@echo off\ndate /T\ntime /T\npause")
 
-3. **TOOL CALL FORMAT**: Write tool calls exactly like this:
+3. **DO NOT JUST EXPLAIN**: Do not just explain what you would do - ACTUALLY DO IT by writing the tool call.
+
+4. **TOOL CALL FORMAT**: Write tool calls exactly like this:
+   - write_file("script.bat", "@echo off\necho Hello\npause")
+   - write_file("app.py", "print('Hello World')")
    - learn_new_technology("Docker", ["containers", "images", "docker-compose"])
    - read_knowledge_base("Docker")
    - search_documentation("Docker", "networking")
    - update_knowledge_base("Docker", "# Docker Containers\n\nContainers are...", "overview.md", append=True)
 
-4. **SAVE SEARCH RESULTS**: After searching, use update_knowledge_base to save the actual content, not just show URLs.
+5. **SAVE SEARCH RESULTS**: After searching, use update_knowledge_base to save the actual content, not just show URLs.
 
-5. **FOR LEARNING TASKS**: When user asks to "learn" something:
+6. **FOR LEARNING TASKS**: When user asks to "learn" something:
    - First: learn_new_technology("Technology", ["topic1", "topic2"])
    - Then: search_documentation("Technology", "topic1") to get real content
    - Then: update_knowledge_base("Technology", "FULL CONTENT FROM SEARCH RESULTS HERE", "topic1.md", append=False)
    - IMPORTANT: Copy the ENTIRE search result content (titles, snippets, URLs) into update_knowledge_base, not just placeholder text!
    - Repeat for each topic
 
-6. **DO NOT REPEAT TOOL CALLS**: After executing a tool, do NOT repeat the tool call in your response. Only show the results and your explanation.
+7. **DO NOT REPEAT TOOL CALLS**: After executing a tool, do NOT repeat the tool call in your response. Only show the results and your explanation.
 
-7. **ACTUALLY SEARCH AND SAVE**: Don't just create empty structure - search for real content and save it!
+8. **ACTUALLY SEARCH AND SAVE**: Don't just create empty structure - search for real content and save it!
 
-8. **SAVE FULL CONTENT**: When using update_knowledge_base, you MUST pass the FULL content from search results, not placeholder text like "Content from search will be inserted here". Copy the entire search result including titles, descriptions, and URLs.
+9. **SAVE FULL CONTENT**: When using update_knowledge_base, you MUST pass the FULL content from search results, not placeholder text like "Content from search will be inserted here". Copy the entire search result including titles, descriptions, and URLs.
+
+10. **FILE CREATION EXAMPLES**:
+    - User: "create a batch file to show date and time"
+      → You MUST call: write_file("show_date_time.bat", "@echo off\ndate /T\ntime /T\npause")
+    
+    - User: "create a Python script to calculate fibonacci"
+      → You MUST call: write_file("fibonacci.py", "def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(10))")
+    
+    - NEVER just show code without calling write_file!
 
 IMPORTANT: For learning tasks, you MUST:
 1. Create structure with learn_new_technology
