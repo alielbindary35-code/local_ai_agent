@@ -776,12 +776,44 @@ class ExpertAgent:
                             params["query"] = args_list[0]
                             params["max_results"] = int(args_list[1]) if len(args_list) > 1 else 5
                     
+                    elif tool_name == "write_file":
+                        # args: [filepath, content]
+                        if len(args_list) >= 2:
+                            params["filepath"] = args_list[0]
+                            params["content"] = args_list[1]
+                        elif len(args_list) == 1:
+                            params["filepath"] = args_list[0]
+                            params["content"] = ""
+                    
+                    elif tool_name == "create_directory":
+                        # args: [dirpath]
+                        if args_list:
+                            params["dirpath"] = args_list[0]
+                    
+                    elif tool_name == "create_project":
+                        # args: [project_name, project_type, options]
+                        if len(args_list) >= 1:
+                            params["project_name"] = args_list[0]
+                            params["project_type"] = args_list[1] if len(args_list) > 1 else "python"
+                            if len(args_list) > 2:
+                                try:
+                                    import json
+                                    params["options"] = json.loads(args_list[2]) if isinstance(args_list[2], str) else args_list[2]
+                                except:
+                                    params["options"] = {}
+                            else:
+                                params["options"] = {}
+                    
                     # Generic fallback: use first arg as "query" or "technology"
                     if not params and args_list:
                         if "search" in tool_name.lower():
                             params["query"] = args_list[0]
                         elif "learn" in tool_name.lower() or "read" in tool_name.lower():
                             params["technology"] = args_list[0]
+                        elif "file" in tool_name.lower() or "write" in tool_name.lower():
+                            # For file operations, use "filepath" or "path"
+                            params["filepath"] = args_list[0] if len(args_list) >= 1 else ""
+                            params["content"] = args_list[1] if len(args_list) >= 2 else ""
                 
                 except Exception as e:
                     console.print(f"[red]Error parsing JSON args: {e}[/red]")
@@ -791,7 +823,11 @@ class ExpertAgent:
                 try:
                     if hasattr(self.tools, tool_name):
                         method = getattr(self.tools, tool_name)
-                        result = method(**params)
+                        # Filter params to only include what the method accepts
+                        import inspect
+                        sig = inspect.signature(method)
+                        valid_params = {k: v for k, v in params.items() if k in sig.parameters}
+                        result = method(**valid_params)
                     elif hasattr(self.expert_tools, tool_name):
                         result = self.expert_tools.execute(tool_name, params)
                     elif hasattr(self.extended_tools, tool_name):
@@ -898,10 +934,46 @@ class ExpertAgent:
                                     "tags": args_matches[3:] if len(args_matches) > 3 else []
                                 }
                         
+                        elif tool_name == "write_file":
+                            if len(args_matches) >= 2:
+                                params = {
+                                    "filepath": args_matches[0],
+                                    "content": args_matches[1]
+                                }
+                            elif len(args_matches) == 1:
+                                params = {"filepath": args_matches[0], "content": ""}
+                        
+                        elif tool_name == "create_directory":
+                            if args_matches:
+                                params = {"dirpath": args_matches[0]}
+                        
+                        elif tool_name == "create_project":
+                            if len(args_matches) >= 1:
+                                params = {
+                                    "project_name": args_matches[0],
+                                    "project_type": args_matches[1] if len(args_matches) > 1 else "python",
+                                    "options": {}
+                                }
+                                # Parse options if provided
+                                if len(args_matches) > 2:
+                                    try:
+                                        import json
+                                        params["options"] = json.loads(args_matches[2])
+                                    except:
+                                        params["options"] = {}
+                        
                         # Fallback for single argument tools
                         elif args_matches and not params:
                             # Try to guess the first argument name based on common patterns
-                            params = {"technology": args_matches[0]} # Default guess
+                            # Only use "technology" for knowledge base tools
+                            if "knowledge" in tool_name.lower() or "learn" in tool_name.lower():
+                                params = {"technology": args_matches[0]}
+                            else:
+                                # For unknown tools, try common parameter names
+                                if len(args_matches) == 1:
+                                    params = {"path": args_matches[0]}  # Common for file operations
+                                elif len(args_matches) == 2:
+                                    params = {"arg1": args_matches[0], "arg2": args_matches[1]}
                             
                 except Exception as e:
                     console.print(f"[red]Error parsing args: {e}[/red]")
@@ -915,11 +987,22 @@ class ExpertAgent:
                 if tool_name == "search_web" and "query" not in params and args_matches:
                     params["query"] = args_matches[0]
                 
+                # Validate params for specific tools before execution
+                if tool_name == "write_file":
+                    if "filepath" not in params:
+                        result = f"Error: write_file requires 'filepath' parameter"
+                    elif "content" not in params:
+                        result = f"Error: write_file requires 'content' parameter"
+                
                 # Execute tool from the appropriate class
                 if hasattr(self.tools, tool_name):
                     # Execute tool from basic tools
                     method = getattr(self.tools, tool_name)
-                    result = method(**params)
+                    # Filter params to only include what the method accepts
+                    import inspect
+                    sig = inspect.signature(method)
+                    valid_params = {k: v for k, v in params.items() if k in sig.parameters}
+                    result = method(**valid_params)
                 elif hasattr(self.expert_tools, tool_name):
                     result = self.expert_tools.execute(tool_name, params)
                 elif hasattr(self.extended_tools, tool_name):
