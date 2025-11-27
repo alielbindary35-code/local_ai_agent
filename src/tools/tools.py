@@ -52,6 +52,8 @@ class Tools:
         tools = {
             "read_file": "Read content from a file (args: filepath)",
             "write_file": "Write content to a file (args: filepath, content)",
+            "create_directory": "Create a directory/folder (args: dirpath)",
+            "create_project": "Create a complete project structure (args: project_name, project_type, options)",
             "list_dir": "List contents of a directory (args: dirpath)",
             "search_files": "Search for files matching a pattern (args: pattern, directory)",
             "delete_file": "Delete a file (requires confirmation) (args: filepath)",
@@ -126,6 +128,145 @@ class Tools:
             return f"Successfully wrote to {filepath}"
         except Exception as e:
             return f"Error writing file: {str(e)}"
+    
+    def create_directory(self, dirpath: str) -> str:
+        """
+        Create a directory/folder.
+        إنشاء مجلد.
+        """
+        try:
+            Path(dirpath).mkdir(parents=True, exist_ok=True)
+            return f"Successfully created directory: {dirpath}"
+        except Exception as e:
+            return f"Error creating directory: {str(e)}"
+    
+    def create_project(self, project_name: str, project_type: str = "python", options: Optional[Dict[str, Any]] = None) -> str:
+        """
+        Create a complete project structure.
+        إنشاء هيكل مشروع كامل.
+        
+        Args:
+            project_name: Name of the project
+            project_type: Type of project (python, web, nodejs, react, vue, etc.)
+            options: Additional options (include_tests, include_docs, framework, etc.)
+        """
+        if options is None:
+            options = {}
+        
+        try:
+            base_path = Path(project_name)
+            base_path.mkdir(exist_ok=True)
+            
+            created_items = []
+            
+            if project_type.lower() == "python":
+                # Python project structure
+                (base_path / "src").mkdir(exist_ok=True)
+                (base_path / "src" / "__init__.py").write_text("")
+                created_items.append("src/")
+                
+                if options.get("include_tests", True):
+                    (base_path / "tests").mkdir(exist_ok=True)
+                    (base_path / "tests" / "__init__.py").write_text("")
+                    created_items.append("tests/")
+                
+                if options.get("include_docs", True):
+                    (base_path / "docs").mkdir(exist_ok=True)
+                    (base_path / "docs" / "README.md").write_text(f"# {project_name}\n\nProject documentation")
+                    created_items.append("docs/")
+                
+                (base_path / "requirements.txt").write_text("# Add your dependencies here\n")
+                (base_path / "README.md").write_text(f"# {project_name}\n\nProject description")
+                (base_path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\nvenv/\n.venv/\n*.egg-info/\ndist/\nbuild/")
+                created_items.extend(["requirements.txt", "README.md", ".gitignore"])
+            
+            elif project_type.lower() in ["web", "html", "static"]:
+                # Static web project
+                (base_path / "css").mkdir(exist_ok=True)
+                (base_path / "js").mkdir(exist_ok=True)
+                (base_path / "images").mkdir(exist_ok=True)
+                created_items.extend(["css/", "js/", "images/"])
+                
+                (base_path / "index.html").write_text("""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>""" + project_name + """</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>Welcome to """ + project_name + """</h1>
+    <script src="js/main.js"></script>
+</body>
+</html>""")
+                
+                (base_path / "css" / "style.css").write_text("/* CSS Styles */\nbody {\n    margin: 0;\n    padding: 20px;\n    font-family: Arial, sans-serif;\n}")
+                (base_path / "js" / "main.js").write_text("// JavaScript code\nconsole.log('Hello from " + project_name + "');")
+                created_items.extend(["index.html", "css/style.css", "js/main.js"])
+            
+            elif project_type.lower() in ["nodejs", "node"]:
+                # Node.js project
+                (base_path / "src").mkdir(exist_ok=True)
+                (base_path / "src" / "index.js").write_text("// Main entry point\nconsole.log('Hello from " + project_name + "');")
+                (base_path / "package.json").write_text(f"""{{
+  "name": "{project_name.lower().replace(' ', '-')}",
+  "version": "1.0.0",
+  "description": "{project_name}",
+  "main": "src/index.js",
+  "scripts": {{
+    "start": "node src/index.js",
+    "test": "echo \\"Error: no test specified\\" && exit 1"
+  }},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}}""")
+                (base_path / ".gitignore").write_text("node_modules/\n.env\n*.log\n.DS_Store")
+                created_items.extend(["src/", "src/index.js", "package.json", ".gitignore"])
+            
+            elif project_type.lower() == "react":
+                # React project structure
+                (base_path / "src").mkdir(exist_ok=True)
+                (base_path / "src" / "components").mkdir(exist_ok=True)
+                (base_path / "src" / "App.jsx").write_text("""import React from 'react';
+import './App.css';
+
+function App() {
+  return (
+    <div className="App">
+      <h1>Welcome to """ + project_name + """</h1>
+    </div>
+  );
+}
+
+export default App;""")
+                (base_path / "src" / "App.css").write_text(".App {\n  text-align: center;\n}")
+                (base_path / "package.json").write_text(f"""{{
+  "name": "{project_name.lower().replace(' ', '-')}",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {{
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }},
+  "scripts": {{
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  }}
+}}""")
+                created_items.extend(["src/", "src/components/", "src/App.jsx", "src/App.css", "package.json"])
+            
+            else:
+                # Generic project structure
+                (base_path / "src").mkdir(exist_ok=True)
+                (base_path / "README.md").write_text(f"# {project_name}\n\nProject description")
+                created_items.extend(["src/", "README.md"])
+            
+            return f"✅ Created {project_type} project: {project_name}\nCreated: {', '.join(created_items)}"
+        
+        except Exception as e:
+            return f"Error creating project: {str(e)}"
     
     def list_dir(self, dirpath: str = ".", extensions: Optional[List[str]] = None) -> str:
         """

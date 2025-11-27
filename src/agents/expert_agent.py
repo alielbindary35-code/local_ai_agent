@@ -1107,6 +1107,36 @@ CRITICAL INSTRUCTIONS:
     
     - NEVER just show code without calling write_file!
 
+11. **PROJECT CREATION**: When user asks to create a project, use create_project tool:
+    - User: "create a Python project called myapp"
+      → You MUST call: create_project("myapp", "python", {"include_tests": True, "include_docs": True})
+    
+    - User: "create a web project"
+      → You MUST call: create_project("web_project", "web", {})
+    
+    - User: "create a React app called todo-app"
+      → You MUST call: create_project("todo-app", "react", {})
+    
+    - For complex projects, you can combine:
+      1. create_project("project_name", "project_type", options) - creates structure
+      2. create_directory("project_name/subfolder") - add extra folders
+      3. write_file("project_name/file.py", "content") - add specific files
+
+12. **DIRECTORY CREATION**: When user asks to create folders/directories:
+    - User: "create a folder called data"
+      → You MUST call: create_directory("data")
+    
+    - User: "create folders for src, tests, docs"
+      → You MUST call: create_directory("src"), create_directory("tests"), create_directory("docs")
+
+13. **COMPLETE PROJECT WORKFLOW**: For complex requests like "create a full-stack app":
+    - Step 1: create_project("app_name", "project_type", options) - creates base structure
+    - Step 2: create_directory("app_name/backend") - add backend folder
+    - Step 3: create_directory("app_name/frontend") - add frontend folder
+    - Step 4: write_file("app_name/backend/main.py", "code") - add backend files
+    - Step 5: write_file("app_name/frontend/index.html", "code") - add frontend files
+    - Continue until all requested files are created!
+
 IMPORTANT: For learning tasks, you MUST:
 1. Create structure with learn_new_technology
 2. Search for real content with search_documentation (which returns full search results)
