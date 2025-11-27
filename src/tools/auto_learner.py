@@ -64,15 +64,49 @@ class AutoLearner:
                 console.print(f"[red]Error: Tools list not found at {self.tools_file}[/red]")
             return {}
         
-        return json.loads(self.tools_file.read_text())
+        try:
+            content = self.tools_file.read_text(encoding='utf-8')
+            # Remove any BOM or leading whitespace
+            content = content.lstrip('\ufeff').strip()
+            return json.loads(content)
+        except json.JSONDecodeError as e:
+            error_msg = f"JSON parse error in {self.tools_file}: {e}"
+            if IN_JUPYTER:
+                print(f"ERROR: {error_msg}")
+            else:
+                console.print(f"[red]{error_msg}[/red]")
+            return {}
+        except Exception as e:
+            error_msg = f"Error reading {self.tools_file}: {e}"
+            if IN_JUPYTER:
+                print(f"ERROR: {error_msg}")
+            else:
+                console.print(f"[red]{error_msg}[/red]")
+            return {}
     
     def load_progress(self) -> List[str]:
         """Load list of already learned tools"""
         if not self.progress_file.exists():
             return []
         try:
-            return json.loads(self.progress_file.read_text())
-        except:
+            content = self.progress_file.read_text(encoding='utf-8')
+            # Remove any BOM or leading whitespace
+            content = content.lstrip('\ufeff').strip()
+            if not content:
+                return []
+            return json.loads(content)
+        except json.JSONDecodeError as e:
+            # If JSON is invalid, return empty list and log error
+            if IN_JUPYTER:
+                print(f"WARNING: Invalid JSON in progress file: {e}. Starting fresh.")
+            else:
+                console.print(f"[yellow]WARNING: Invalid JSON in progress file: {e}. Starting fresh.[/yellow]")
+            return []
+        except Exception as e:
+            if IN_JUPYTER:
+                print(f"WARNING: Error reading progress file: {e}. Starting fresh.")
+            else:
+                console.print(f"[yellow]WARNING: Error reading progress file: {e}. Starting fresh.[/yellow]")
             return []
             
     def save_progress(self, learned_tool: str):
@@ -80,7 +114,17 @@ class AutoLearner:
         progress = self.load_progress()
         if learned_tool not in progress:
             progress.append(learned_tool)
-            self.progress_file.write_text(json.dumps(progress, indent=2))
+            try:
+                # Ensure UTF-8 encoding when writing
+                self.progress_file.write_text(
+                    json.dumps(progress, indent=2, ensure_ascii=False),
+                    encoding='utf-8'
+                )
+            except Exception as e:
+                if IN_JUPYTER:
+                    print(f"WARNING: Failed to save progress: {e}")
+                else:
+                    console.print(f"[yellow]WARNING: Failed to save progress: {e}[/yellow]")
 
     def learn_all(self):
         """Learn EVERYTHING in the list automatically"""

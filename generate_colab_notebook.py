@@ -80,12 +80,26 @@ def generate_notebook():
             "if project_root not in sys.path:\n",
             "    sys.path.insert(0, project_root)\n",
             "\n",
-            "# 4. Verify Setup\n",
+            "# 4. Verify Setup and JSON files\n",
+            "import json\n",
             "print(f\"Python {sys.version}\")\n",
             "print(f\"Current directory: {project_root}\")\n",
             "print(f\"Python path includes project: {project_root in sys.path}\")\n",
             "print(f\"Project exists: {Path('src/tools/auto_learner.py').exists()}\")\n",
-            "print(\"✅ Environment Ready!\")"
+            "\n",
+            "# Verify JSON files are valid\n",
+            "tools_file = Path('data/essential_tools.json')\n",
+            "if tools_file.exists():\n",
+            "    try:\n",
+            "        content = tools_file.read_text(encoding='utf-8').strip()\n",
+            "        json.loads(content)\n",
+            "        print(\"OK: essential_tools.json is valid\")\n",
+            "    except Exception as e:\n",
+            "        print(f\"ERROR: essential_tools.json is invalid: {e}\")\n",
+            "else:\n",
+            "    print(\"WARNING: essential_tools.json not found\")\n",
+            "\n",
+            "print(\"Environment Ready!\")"
           ]
         },
         {
@@ -105,11 +119,11 @@ def generate_notebook():
             "    sys.path.insert(0, os.getcwd())\n",
             "\n",
             "# This will learn ALL tools in data/essential_tools.json\n",
-            "# Time: ~10-15 minutes for all 67 tools\n",
+            "# Time: ~15-20 minutes for all 122 tools\n",
             "from src.tools.auto_learner import AutoLearner\n",
             "\n",
             "learner = AutoLearner()\n",
-            "learner.learn_all()  # Learns ALL 67+ tools!"
+            "learner.learn_all()  # Learns ALL 122+ tools!"
           ]
         },
         {
@@ -140,9 +154,18 @@ def generate_notebook():
             "\n",
             "# Show summary\n",
             "if Path('data/learning_progress.json').exists():\n",
-            "    progress = json.loads(Path('data/learning_progress.json').read_text())\n",
-            "    print(f\"✅ Downloaded {len(progress)} learned tools!\")\n",
-            "    print(f\"📦 Knowledge base ready for merge!\")"
+            "    try:\n",
+            "        content = Path('data/learning_progress.json').read_text(encoding='utf-8').strip()\n",
+            "        if content:\n",
+            "            progress = json.loads(content)\n",
+            "            print(f\"OK: Downloaded {len(progress)} learned tools!\")\n",
+            "            print(f\"Knowledge base ready for merge!\")\n",
+            "        else:\n",
+            "            print(\"Progress file is empty\")\n",
+            "    except json.JSONDecodeError as e:\n",
+            "        print(f\"WARNING: Invalid JSON in progress file: {e}\")\n",
+            "    except Exception as e:\n",
+            "        print(f\"WARNING: Error reading progress: {e}\")"
           ]
         }
       ]
