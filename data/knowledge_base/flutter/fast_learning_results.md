@@ -1,16 +1,16 @@
 # Fast Learning Summary: Flutter
 
-**Topics Covered**: widgets, state-management
+**Topics Covered**: overview, key-features, installation, best-practices, ui-components, navigation, platform-specific, performance
 
-**Total Sources**: 12
+**Total Sources**: 32
 
-### SEARCH (6 items)
-- [Flutter - Build apps for any screen](https://flutter.dev/)
-- [Get started with Flutter](https://docs.flutter.dev/get-started)
-- [Flutter documentation](https://docs.flutter.dev/)
+### SEARCH (24 items)
+- [Dependency ':flutter_local_notifications' requires …](https://stackoverflow.com/questions/79158012/dependency-flutter-local-notifications-requires-core-library-desugaring-to-be)
+- [flutter - Null check operator used on a null value - Stack Overflow](https://stackoverflow.com/questions/64278595/null-check-operator-used-on-a-null-value)
+- [How to solve flutter web api cors error only with dart code?](https://stackoverflow.com/questions/65630743/how-to-solve-flutter-web-api-cors-error-only-with-dart-code)
 
-### GITHUB (6 items)
-- [getwidget](https://github.com/ionicfirebaseapp/getwidget)
-- [flutter_easy_refresh](https://github.com/xuelongqy/flutter_easy_refresh)
-- [flutter-ui-nice](https://github.com/FlutterOpen/flutter-ui-nice)
+### DOCS (8 items)
+- [Flutter Official Documentation - overview](https://docs.flutter.dev/search?q=overview)
+- [Flutter Official Documentation - key-features](https://docs.flutter.dev/search?q=key-features)
+- [Flutter Official Documentation - installation](https://docs.flutter.dev/search?q=installation)
 

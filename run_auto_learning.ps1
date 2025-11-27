@@ -1,9 +1,25 @@
 # Auto-Learning Quick Start Script
 # This script runs the auto-learner to populate the knowledge base
 
-# Get script directory
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ProjectRoot = Split-Path -Parent $ScriptDir
+# Get script directory and project root
+$ScriptPath = $MyInvocation.MyCommand.Path
+$ScriptDir = Split-Path -Parent $ScriptPath
+
+# If script is in root, use script dir as project root
+# Otherwise, go up one level
+if (Test-Path (Join-Path $ScriptDir "src\tools\auto_learner.py")) {
+    $ProjectRoot = $ScriptDir
+} else {
+    $ProjectRoot = Split-Path -Parent $ScriptDir
+}
+
+# Verify we found the project root
+if (-not (Test-Path (Join-Path $ProjectRoot "src\tools\auto_learner.py"))) {
+    Write-Host "ERROR: Could not find project root!" -ForegroundColor Red
+    Write-Host "Script location: $ScriptDir" -ForegroundColor Yellow
+    Write-Host "Trying to find project root..." -ForegroundColor Yellow
+    exit 1
+}
 
 Write-Host "Auto-Learning Quick Start" -ForegroundColor Cyan
 Write-Host ""
@@ -97,13 +113,19 @@ if ($confirm -ne "y") {
     exit 0
 }
 
-# Change to project root and run
+# Change to project root
 Set-Location $ProjectRoot
+
+# Set UTF-8 encoding for Python output
+$env:PYTHONIOENCODING = 'utf-8'
+
 Write-Host ""
 Write-Host "Starting auto-learning..." -ForegroundColor Cyan
+Write-Host "Project root: $ProjectRoot" -ForegroundColor Gray
 Write-Host ""
 
-python src\tools\auto_learner.py
+# Run using Python module syntax (handles paths automatically)
+python -m src.tools.auto_learner 
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""

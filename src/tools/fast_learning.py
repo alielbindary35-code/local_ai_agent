@@ -4,11 +4,11 @@ Fast Learning Module - Accelerated Knowledge Acquisition
 
 This module provides enhanced online learning capabilities by integrating
 multiple knowledge sources:
-- 🔍 Web search (DuckDuckGo)
-- 📚 Official documentation
-- 💻 GitHub repositories
-- 📖 Wikipedia (optional)
-- 💬 Stack Overflow (optional)
+- Web search (DuckDuckGo)
+- Official documentation
+- GitHub repositories
+- Wikipedia (optional)
+- Stack Overflow (optional)
 
 Usage:
     fast_learner = FastLearning()
@@ -19,6 +19,13 @@ import requests
 from typing import List, Dict, Any
 from pathlib import Path
 import json
+import sys
+import io
+
+# Fix encoding for Windows console
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 
 class FastLearning:
@@ -55,7 +62,7 @@ class FastLearning:
         }
         
         for topic in topics:
-            print(f"🔍 Learning about {technology} - {topic}...")
+            print(f"Learning about {technology} - {topic}...")
             
             # 1. Search web for documentation
             if self.sources["search"]:
@@ -96,7 +103,7 @@ class FastLearning:
                 return search_results
             return []
         except Exception as e:
-            print(f"⚠️ Web search failed: {e}")
+            print(f"WARNING: Web search failed: {e}")
             return []
     
     def _get_official_docs(self, technology: str, topic: str) -> List[Dict[str, str]]:
@@ -179,7 +186,7 @@ class FastLearning:
                 return repos
             return []
         except Exception as e:
-            print(f"⚠️ GitHub search failed: {e}")
+            print(f"WARNING: GitHub search failed: {e}")
             return []
     
     def _generate_summary(self, results: Dict[str, Any]) -> str:
@@ -229,9 +236,9 @@ class FastLearning:
                 append=False
             )
             
-            return f"✅ Saved fast learning results to knowledge base: {technology}/{filename}"
+            return f"OK: Saved fast learning results to knowledge base: {technology}/{filename}"
         except Exception as e:
-            return f"❌ Error saving to knowledge base: {e}"
+            return f"ERROR: Error saving to knowledge base: {e}"
 
 
 def main():

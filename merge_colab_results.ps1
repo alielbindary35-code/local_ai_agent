@@ -1,9 +1,17 @@
 # Merge Colab Knowledge Base with Local
 # This script merges the downloaded knowledge_base.zip with your local knowledge base
 
-# Get script directory
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ProjectRoot = Split-Path -Parent $ScriptDir
+# Get script directory and project root
+$ScriptPath = $MyInvocation.MyCommand.Path
+$ScriptDir = Split-Path -Parent $ScriptPath
+
+# If script is in root, use script dir as project root
+# Otherwise, go up one level
+if (Test-Path (Join-Path $ScriptDir "src\tools\auto_learner.py")) {
+    $ProjectRoot = $ScriptDir
+} else {
+    $ProjectRoot = Split-Path -Parent $ScriptDir
+}
 
 Write-Host "Merging Colab Knowledge Base with Local" -ForegroundColor Cyan
 Write-Host ""

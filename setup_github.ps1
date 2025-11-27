@@ -1,9 +1,17 @@
 # GitHub Setup Helper Script
 # This script helps you push your local repo to GitHub
 
-# Get script directory
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ProjectRoot = Split-Path -Parent $ScriptDir
+# Get script directory and project root
+$ScriptPath = $MyInvocation.MyCommand.Path
+$ScriptDir = Split-Path -Parent $ScriptPath
+
+# If script is in root, use script dir as project root
+# Otherwise, go up one level
+if (Test-Path (Join-Path $ScriptDir "src\tools\auto_learner.py")) {
+    $ProjectRoot = $ScriptDir
+} else {
+    $ProjectRoot = Split-Path -Parent $ScriptDir
+}
 
 # Change to project root
 Set-Location $ProjectRoot

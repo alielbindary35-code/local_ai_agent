@@ -9,7 +9,13 @@ It reads a list of tools and systematically learns them using the FastLearning m
 import json
 import time
 import sys
+from pathlib import Path
 from typing import List, Dict
+
+# Add project root to path if not already there
+_project_root = Path(__file__).parent.parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
 
 # Import paths system
 from src.core.paths import (
@@ -96,13 +102,13 @@ class AutoLearner:
                 print("🎉 All tools have been learned! You have a genius agent now.")
                 return
         else:
-            console.print(f"[bold cyan]🚀 Auto-Learner Initialized[/bold cyan]")
-            console.print(f"📚 Total Tools: {total_tools}")
-            console.print(f"✅ Already Learned: {learned_count}")
-            console.print(f"🎓 To Learn: {to_learn_count}\n")
+            console.print("[bold cyan]Auto-Learner Initialized[/bold cyan]")
+            console.print(f"[cyan]Total Tools:[/cyan] {total_tools}")
+            console.print(f"[green]Already Learned:[/green] {learned_count}")
+            console.print(f"[yellow]To Learn:[/yellow] {to_learn_count}\n")
             
             if to_learn_count == 0:
-                console.print("[green]🎉 All tools have been learned! You have a genius agent now.[/green]")
+                console.print("[green]All tools have been learned! You have a genius agent now.[/green]")
                 return
 
         # Start learning loop
@@ -243,17 +249,17 @@ class AutoLearner:
                             time.sleep(1)
                             
                         except Exception as e:
-                            console.print(f"[red]❌ Failed to learn {tool}: {e}[/red]")
+                            console.print(f"[red]Failed to learn {tool}: {e}[/red]")
                             continue
         
         kb_path = get_knowledge_base_dir()
         
         if IN_JUPYTER:
-            print("\n✨ Auto-Learning Session Complete! ✨")
-            print(f"📂 Knowledge stored in: {kb_path.absolute()}")
+            print("\nAuto-Learning Session Complete!")
+            print(f"Knowledge stored in: {kb_path.absolute()}")
         else:
-            console.print("\n[bold green]✨ Auto-Learning Session Complete! ✨[/bold green]")
-            console.print(f"📂 Knowledge stored in: {kb_path.absolute()}")
+            console.print("\n[bold green]Auto-Learning Session Complete![/bold green]")
+            console.print(f"[cyan]Knowledge stored in:[/cyan] {kb_path.absolute()}")
 
 if __name__ == "__main__":
     learner = AutoLearner()
