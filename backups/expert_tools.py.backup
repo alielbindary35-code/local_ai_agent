@@ -23,11 +23,6 @@ from src.core.paths import (
     get_knowledge_base_dir,
     ensure_dir
 )
-from src.utils.connection_checker import ConnectionChecker
-from src.utils.cache_manager import CacheManager
-from rich.console import Console
-
-console = Console()
 
 
 class ExpertTools:
@@ -38,8 +33,6 @@ class ExpertTools:
     
     def __init__(self):
         self.system = os.name
-        self.connection_checker = ConnectionChecker()
-        self.cache_manager = CacheManager()
     
     def get_tool_descriptions(self) -> str:
         """Get descriptions of all expert tools"""
@@ -346,16 +339,6 @@ volumes:
     
     def search_documentation(self, technology: str, query: str) -> str:
         """Search official documentation online and fetch actual content"""
-        # Check internet connection
-        online = self.connection_checker.check_internet()
-        
-        if not online:
-            console.print(f"[yellow]📴 Offline: Checking cache for {technology}...[/yellow]")
-            cached_content = self.cache_manager.load(technology, query)
-            if cached_content:
-                return f"📦 [CACHE] {cached_content}"
-            return f"❌ Offline and no cache found for {technology}. Please connect to internet to learn."
-
         try:
             # Use the search_web tool from Tools class to get real content
             from src.tools.tools import Tools
@@ -365,7 +348,6 @@ volumes:
             search_query = f"{technology} {query} documentation"
             results = tools.search_web(search_query, max_results=3)
             
-            content = ""
             if results and isinstance(results, list) and len(results) > 0:
                 content = f"📚 Documentation Search Results for {technology} ({query}):\n\n"
                 for i, result in enumerate(results[:3], 1):
@@ -375,6 +357,8 @@ volumes:
                     content += f"{i}. **{title}**\n"
                     content += f"   {snippet[:200]}...\n"
                     content += f"   🔗 {url}\n\n"
+                
+                return content
             else:
                 # Fallback to URL if search fails
                 doc_urls = {
@@ -385,13 +369,45 @@ volumes:
                     "javascript": "https://developer.mozilla.org",
                 }
                 base_url = doc_urls.get(technology.lower(), f"https://www.google.com/search?q={technology}+documentation")
-                content = f"📚 Documentation for {technology}:\n{base_url}\nSearch query: {query}\n\n(Note: Web search unavailable, showing URL only)"
-            
-            # Save to cache
-            self.cache_manager.save(technology, query, content)
-            return content
-
+                return f"📚 Documentation for {technology}:\n{base_url}\nSearch query: {query}\n\n(Note: Web search unavailable, showing URL only)"
         except Exception as e:
+            # Fallback on error
+            doc_urls = {
+                "docker": "https://docs.docker.com",
+                "postgres": "https://www.postgresql.org/docs/",
+                "n8n": "https://docs.n8n.io",
+                "python": "https://docs.python.org/3/",
+                "javascript": "https://developer.mozilla.org",
+            }
+            base_url = doc_urls.get(technology.lower(), f"https://www.google.com/search?q={technology}+documentation")
+            return f"📚 Documentation for {technology}:\n{base_url}\nSearch query: {query}\n\n(Error: {str(e)})"
+    
+    def learn_new_technology(self, technology: str, topics: List[str]) -> str:
+        """Learn new technology online using Fast Learning and save REAL knowledge immediately"""
+        try:
+            # Use Fast Learning module
+            print(f"🚀 Fast Learning initiated for {technology}...")
+            results = self.fast_learner.learn_fast(technology, topics)
+            
+            # Save to knowledge base
+            save_msg = self.fast_learner.save_to_knowledge_base(results)
+            
+            return f"""
+🎉 Successfully learned {technology} using Fast Learning!
+
+{save_msg}
+
+� Summary:
+{results['summary'][:500]}...
+
+💡 You can now ask questions about {technology}!
+"""
+        except Exception as e:
+            return f"Error learning technology: {str(e)}"
+    
+    def read_knowledge_base(self, technology: str) -> str:
+        """Read saved knowledge about a technology"""
+        try:
             # Use centralized knowledge base path
             kb_dir = get_knowledge_base_dir() / technology.lower().replace(" ", "_")
             
@@ -483,12 +499,6 @@ volumes:
     
     def search_stackoverflow(self, query: str, tags: List[str] = None) -> str:
         """Search StackOverflow for solutions"""
-        # Check internet connection
-        online = self.connection_checker.check_internet()
-        
-        if not online:
-            return "⚠️ Cannot search StackOverflow while offline."
-
         try:
             # Use StackExchange API
             base_url = "https://api.stackexchange.com/2.3/search/advanced"
