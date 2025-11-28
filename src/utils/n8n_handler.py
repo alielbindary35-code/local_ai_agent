@@ -17,9 +17,11 @@ from pathlib import Path
 from datetime import datetime
 
 from src.utils.api_handler import APIHandler
+from src.utils.error_handler import get_error_handler, ErrorCategory
 from src.core.paths import get_knowledge_base_dir
 
 logger = logging.getLogger(__name__)
+error_handler = get_error_handler()
 
 
 class N8NHandler:
@@ -455,9 +457,102 @@ class N8NHandler:
                 }
         
         except Exception as e:
+            error_handler.handle_error(
+                e,
+                context={"workflow_id": workflow_id, "operation": "get_status"},
+                category=ErrorCategory.SYSTEM_ERROR
+            )
             logger.error(f"Error getting workflow status: {e}")
             return {
                 'success': False,
                 'error': str(e)
             }
+    
+    def monitor_workflow_execution(
+        self,
+        workflow_id: str,
+        execution_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Monitor workflow execution and detect failures.
+        
+        Args:
+            workflow_id: Workflow ID
+            execution_id: Optional execution ID to monitor
+        
+        Returns:
+            Execution monitoring information
+        """
+        try:
+            if execution_id:
+                endpoint = f'/api/v1/executions/{execution_id}'
+            else:
+                endpoint = f'/api/v1/workflows/{workflow_id}/executions?limit=1'
+            
+            response = self.api_handler.get(endpoint)
+            
+            if response['success']:
+                execution = response['data']
+                if isinstance(execution, list) and execution:
+                    execution = execution[0]
+                
+                return {
+                    'success': True,
+                    'status': execution.get('finished', False),
+                    'mode': execution.get('mode'),
+                    'started_at': execution.get('startedAt'),
+                    'stopped_at': execution.get('stoppedAt'),
+                    'workflow_data': execution.get('workflowData', {})
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': response.get('error')
+                }
+        except Exception as e:
+            error_handler.handle_error(
+                e,
+                context={"workflow_id": workflow_id, "operation": "monitor_execution"},
+                category=ErrorCategory.SYSTEM_ERROR
+            )
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def validate_workflow(self, workflow_json: Dict) -> Dict[str, Any]:
+        """
+        Validate workflow structure before creation.
+        
+        Args:
+            workflow_json: Workflow JSON data
+        
+        Returns:
+            Validation result
+        """
+        validation = {
+            'valid': True,
+            'errors': [],
+            'warnings': []
+        }
+        
+        # Check required fields
+        if 'name' not in workflow_json:
+            validation['valid'] = False
+            validation['errors'].append('Workflow name is required')
+        
+        if 'nodes' not in workflow_json:
+            validation['valid'] = False
+            validation['errors'].append('Workflow nodes are required')
+        elif not isinstance(workflow_json['nodes'], list):
+            validation['valid'] = False
+            validation['errors'].append('Workflow nodes must be a list')
+        elif len(workflow_json['nodes']) == 0:
+            validation['warnings'].append('Workflow has no nodes')
+        
+        # Check connections
+        if 'connections' not in workflow_json:
+            validation['warnings'].append('Workflow has no connections defined')
+        
+        return validation
 

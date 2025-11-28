@@ -1,0 +1,40 @@
+# Docker Compose for Local AI Agent with Ollama
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ai_agent_ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    networks:
+      - ai_agent_network
+
+  ai_agent:
+    build: .
+    container_name: ai_agent
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/data/logs
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - ai_agent_network
+    # Uncomment to run interactively
+    # stdin_open: true
+    # tty: true
+
+volumes:
+  ollama_data:
+
+networks:
+  ai_agent_network:
+    driver: bridge
+

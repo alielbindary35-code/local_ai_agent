@@ -737,10 +737,10 @@ class ExpertAgent:
                         elif "action" in data and "action_input" in data:
                             tool_name = data["action"]
                             action_input = data["action_input"]
-                            # Convert dict to list format for compatibility
+                            # Keep dict format for action_input - it's more reliable
                             if isinstance(action_input, dict):
-                                # Convert dict to list of values, preserving order
-                                args_list = list(action_input.values())
+                                # Store as dict wrapped in list for compatibility with existing code
+                                args_list = [action_input]
                             elif isinstance(action_input, list):
                                 args_list = action_input
                             else:
@@ -776,7 +776,7 @@ class ExpertAgent:
                 try:
                     # If args_list contains a dict (from action_input format), use it directly
                     if len(args_list) == 1 and isinstance(args_list[0], dict):
-                        params = args_list[0]
+                        params = args_list[0].copy()  # Use dict directly from action_input
                     elif tool_name == "learn_new_technology":
                         # args: [technology, topics_list]
                         if len(args_list) >= 1:
@@ -888,11 +888,12 @@ class ExpertAgent:
                         console.print(f"[cyan]📊 Status:[/cyan] [yellow]Tool execution completed[/yellow]")
                     
                     # Add to final response
-                    if result not in final_response:
+                    result_str = str(result)
+                    if result_str not in final_response:
                         if final_response:
-                            final_response += f"\n\n{result}"
+                            final_response += f"\n\n{result_str}"
                         else:
-                            final_response = result
+                            final_response = result_str
                     tool_executed = True
                     tools_executed_count += 1
                 
@@ -1085,11 +1086,12 @@ class ExpertAgent:
                     console.print(f"[cyan]📊 Status:[/cyan] [yellow]Tool execution completed[/yellow]")
                 
                 # Add tool output with separator (only if not already added)
-                if result not in final_response:
+                result_str = str(result)
+                if result_str not in final_response:
                     if final_response:
-                        final_response += f"\n\n{result}"
+                        final_response += f"\n\n{result_str}"
                     else:
-                        final_response = result
+                        final_response = result_str
                 tool_executed = True
                 tools_executed_count += 1
         

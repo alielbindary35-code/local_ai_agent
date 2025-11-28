@@ -41,15 +41,16 @@ class RiskLevel(Enum):
 
 class PermissionSystem:
     """
-    Permission system for action approval.
+    Permission system for action approval with enhanced security.
     """
     
-    def __init__(self, audit_log_path: Optional[Path] = None):
+    def __init__(self, audit_log_path: Optional[Path] = None, require_approval: bool = True):
         """
         Initialize permission system.
         
         Args:
             audit_log_path: Path to audit log file
+            require_approval: Require explicit approval for actions
         """
         if audit_log_path is None:
             audit_log_path = Path("data") / "audit_log.jsonl"
@@ -58,6 +59,18 @@ class PermissionSystem:
         
         # Permission cache (action -> approved)
         self.permission_cache: Dict[str, bool] = {}
+        self.require_approval = require_approval
+        
+        # Command whitelist/blacklist
+        self.command_whitelist: List[str] = []
+        self.command_blacklist: List[str] = [
+            "rm -rf /", "format", "del /f /s /q", "shutdown", "reboot"
+        ]
+        
+        # File path restrictions
+        self.restricted_paths: List[str] = [
+            "/etc", "/sys", "/proc", "C:\\Windows\\System32"
+        ]
     
     def assess_risk(self, action: str, action_input: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -160,16 +173,61 @@ class PermissionSystem:
         }
         return explanations.get(level, "Unknown risk level.")
     
+    def validate_action(self, action: str, action_input: Dict) -> Dict[str, Any]:
+        """
+        Validate action before execution.
+        
+        Args:
+            action: Action name
+            action_input: Action parameters
+        
+        Returns:
+            Validation result with allowed flag and reason
+        """
+        validation = {
+            "allowed": True,
+            "reason": "Action validated",
+            "warnings": []
+        }
+        
+        # Check command blacklist
+        if action == "run_command":
+            command = action_input.get("command", "").lower()
+            for blocked in self.command_blacklist:
+                if blocked.lower() in command:
+                    validation["allowed"] = False
+                    validation["reason"] = f"Command contains blacklisted pattern: {blocked}"
+                    return validation
+        
+        # Check file path restrictions
+        if action in ["read_file", "write_file", "delete_file"]:
+            filepath = action_input.get("filepath", "")
+            for restricted in self.restricted_paths:
+                if restricted.lower() in filepath.lower():
+                    validation["warnings"].append(f"Accessing restricted path: {restricted}")
+                    validation["allowed"] = False
+                    validation["reason"] = "File path is in restricted area"
+                    return validation
+        
+        # Check whitelist if enabled
+        if self.command_whitelist and action == "run_command":
+            command = action_input.get("command", "").lower()
+            if not any(allowed.lower() in command for allowed in self.command_whitelist):
+                validation["warnings"].append("Command not in whitelist")
+        
+        return validation
+    
     def log_action(
         self,
         action: str,
         action_input: Dict,
         risk: Dict,
         approved: bool,
-        user: Optional[str] = None
+        user: Optional[str] = None,
+        validation: Optional[Dict] = None
     ):
         """
-        Log action to audit log.
+        Log action to audit log with enhanced details.
         
         Args:
             action: Action name
@@ -177,6 +235,7 @@ class PermissionSystem:
             risk: Risk assessment
             approved: Whether action was approved
             user: User identifier (optional)
+            validation: Validation result (optional)
         """
         log_entry = {
             'timestamp': datetime.now().isoformat(),
@@ -184,7 +243,8 @@ class PermissionSystem:
             'action_input': self._sanitize_for_logging(action_input),
             'risk_level': risk['level'],
             'approved': approved,
-            'user': user or 'system'
+            'user': user or 'system',
+            'validation': validation or {}
         }
         
         try:
