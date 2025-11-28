@@ -1,57 +1,95 @@
-import sys
-import os
-import unittest
-from unittest.mock import MagicMock, patch
-
-# Add src to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from src.agents.expert_agent import ExpertAgent
-
-class TestReActLoop(unittest.TestCase):
-    def setUp(self):
-        self.agent = ExpertAgent()
-        # Mock the tools to avoid actual file system changes during test
-        self.agent.tools = MagicMock()
-        self.agent.tools.write_file.return_value = "File created successfully."
-        self.agent.expert_tools = MagicMock()
-        self.agent.extended_tools = MagicMock()
-        
-        # Mock console to avoid clutter
-        self.agent.console = MagicMock()
-
-    @patch('src.agents.expert_agent.ExpertAgent._call_ollama')
-    def test_react_loop_execution(self, mock_call_ollama):
-        # Define a sequence of responses from the LLM
-        # Response 1: Thought + Action
-        response_1 = """
-Thought: I need to create a file named test.txt.
-Action: write_file
-Action Input: {"filepath": "test.txt", "content": "Hello World"}
 """
-        # Response 2: Final Answer (after observation)
-        response_2 = """
-Thought: The file has been created.
-Final Answer: I have created the file test.txt with the content "Hello World".
+Unit tests for ReAct Loop
 """
-        
-        # Set side_effect to return these responses in order
-        mock_call_ollama.side_effect = [response_1, response_2]
-        
-        # Run the agent
-        result = self.agent.run("Create a file named test.txt with content 'Hello World'")
-        
-        # Verify interactions
-        # 1. Check if write_file was called
-        self.agent.tools.write_file.assert_called_with(filepath="test.txt", content="Hello World")
-        
-        # 2. Check if final answer matches
-        self.assertEqual(result, 'I have created the file test.txt with the content "Hello World".')
-        
-        # 3. Check if _call_ollama was called twice (once for action, once for final answer)
-        self.assertEqual(mock_call_ollama.call_count, 2)
-        
-        print("\n✅ ReAct Loop Test Passed!")
 
-if __name__ == '__main__':
-    unittest.main()
+import pytest
+from src.core.react_loop import ReActLoop, TaskState, TaskContext
+
+
+class TestReActLoop:
+    """Test cases for ReActLoop class."""
+    
+    def test_init(self):
+        """Test ReAct loop initialization."""
+        loop = ReActLoop(max_iterations=10, max_retries=3)
+        assert loop.max_iterations == 10
+        assert loop.max_retries == 3
+        assert loop.enable_loop_detection is True
+    
+    def test_parse_reasoning_with_json(self):
+        """Test parsing reasoning with JSON."""
+        loop = ReActLoop()
+        thought = '{"thought": "I need to read a file", "action": "read_file", "action_input": {"filepath": "test.txt"}}'
+        
+        result = loop._parse_reasoning(thought)
+        
+        assert result['action'] == 'read_file'
+        assert result['action_input']['filepath'] == 'test.txt'
+    
+    def test_parse_reasoning_without_json(self):
+        """Test parsing reasoning without JSON."""
+        loop = ReActLoop()
+        thought = "I should read the file"
+        
+        result = loop._parse_reasoning(thought)
+        
+        assert result['thought'] == thought
+        assert result['action'] is None
+    
+    def test_detect_loop(self):
+        """Test loop detection."""
+        loop = ReActLoop()
+        
+        context = TaskContext(
+            task_id="test",
+            user_input="test",
+            state=TaskState.REASONING,
+            iteration=1,
+            max_iterations=10,
+            conversation_history=[],
+            last_action="read_file",
+            last_action_input={"filepath": "test.txt"}
+        )
+        
+        # Simulate repeated actions
+        loop.action_history = [
+            ("read_file", "{'filepath': 'test.txt'}"),
+            ("read_file", "{'filepath': 'test.txt'}"),
+            ("read_file", "{'filepath': 'test.txt'}")
+        ]
+        
+        is_loop = loop._detect_loop(context)
+        assert is_loop is True
+    
+    def test_execute_simple_task(self):
+        """Test executing a simple task."""
+        loop = ReActLoop(max_iterations=5)
+        
+        def reasoning_fn(user_input, history):
+            return '{"thought": "Task complete", "final_answer": "Done"}'
+        
+        def action_fn(action, action_input):
+            return "result"
+        
+        def observation_fn(result):
+            return str(result)
+        
+        result = loop.execute(
+            user_input="test",
+            task_id="test-1",
+            reasoning_fn=reasoning_fn,
+            action_fn=action_fn,
+            observation_fn=observation_fn
+        )
+        
+        assert result['success'] is True
+        assert result['final_answer'] == "Done"
+    
+    def test_reset(self):
+        """Test resetting loop state."""
+        loop = ReActLoop()
+        loop.action_history = [("action1", "input1"), ("action2", "input2")]
+        
+        loop.reset()
+        
+        assert len(loop.action_history) == 0

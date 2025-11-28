@@ -5,7 +5,7 @@ Manages caching of online search results for offline use
 
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from rich.console import Console
 
@@ -29,6 +29,9 @@ class CacheManager:
         
         self.index_file = self.cache_dir / "cache_index.json"
         self.index = self._load_index()
+        
+        # In-memory cache for API responses (key -> {value, expires_at})
+        self.memory_cache: Dict[str, Dict[str, Any]] = {}
     
     def _load_index(self) -> Dict[str, Any]:
         """Load cache index from disk"""
@@ -215,3 +218,51 @@ class CacheManager:
             "total_size_bytes": total_size,
             "total_size_mb": round(total_size / (1024 * 1024), 2)
         }
+    
+    def get(self, key: str) -> Optional[Any]:
+        """
+        Get value from in-memory cache (for API responses).
+        
+        Args:
+            key: Cache key
+        
+        Returns:
+            Cached value or None if not found or expired
+        """
+        if key in self.memory_cache:
+            entry = self.memory_cache[key]
+            if datetime.now() < entry['expires_at']:
+                return entry['value']
+            else:
+                # Expired, remove it
+                del self.memory_cache[key]
+        return None
+    
+    def set(self, key: str, value: Any, ttl: int = 3600):
+        """
+        Set value in in-memory cache with TTL.
+        
+        Args:
+            key: Cache key
+            value: Value to cache
+            ttl: Time-to-live in seconds (default: 1 hour)
+        """
+        expires_at = datetime.now() + timedelta(seconds=ttl)
+        self.memory_cache[key] = {
+            'value': value,
+            'expires_at': expires_at
+        }
+        
+        # Clean up expired entries periodically (simple cleanup)
+        if len(self.memory_cache) > 1000:
+            self._cleanup_expired()
+    
+    def _cleanup_expired(self):
+        """Remove expired entries from memory cache."""
+        now = datetime.now()
+        expired_keys = [
+            key for key, entry in self.memory_cache.items()
+            if now >= entry['expires_at']
+        ]
+        for key in expired_keys:
+            del self.memory_cache[key]

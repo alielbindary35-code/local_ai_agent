@@ -721,13 +721,34 @@ class ExpertAgent:
             for json_str in potential_jsons:
                 try:
                     data = json.loads(json_str)
-                    if isinstance(data, dict) and "tool" in data and "args" in data:
-                        tool_name = data["tool"]
-                        args_list = data["args"]
-                        if not isinstance(args_list, list):
-                            args_list = [args_list]
-                        json_tool_calls.append((tool_name, args_list))
-                        console.print(f"[cyan]📊 Status:[/cyan] [yellow]Found JSON tool call: {tool_name}[/yellow]")
+                    # Handle both formats: {"tool": "...", "args": [...]} and {"action": "...", "action_input": {...}}
+                    if isinstance(data, dict):
+                        tool_name = None
+                        args_list = []
+                        
+                        # Format 1: {"tool": "...", "args": [...]}
+                        if "tool" in data and "args" in data:
+                            tool_name = data["tool"]
+                            args_list = data["args"]
+                            if not isinstance(args_list, list):
+                                args_list = [args_list]
+                        
+                        # Format 2: {"action": "...", "action_input": {...}}
+                        elif "action" in data and "action_input" in data:
+                            tool_name = data["action"]
+                            action_input = data["action_input"]
+                            # Convert dict to list format for compatibility
+                            if isinstance(action_input, dict):
+                                # Convert dict to list of values, preserving order
+                                args_list = list(action_input.values())
+                            elif isinstance(action_input, list):
+                                args_list = action_input
+                            else:
+                                args_list = [action_input]
+                        
+                        if tool_name:
+                            json_tool_calls.append((tool_name, args_list))
+                            console.print(f"[cyan]📊 Status:[/cyan] [yellow]Found JSON tool call: {tool_name}[/yellow]")
                 except (json.JSONDecodeError, KeyError):
                     continue
                     
@@ -753,16 +774,22 @@ class ExpertAgent:
                 # Convert args list to params dict based on tool signature
                 params = {}
                 try:
-                    if tool_name == "learn_new_technology":
+                    # If args_list contains a dict (from action_input format), use it directly
+                    if len(args_list) == 1 and isinstance(args_list[0], dict):
+                        params = args_list[0]
+                    elif tool_name == "learn_new_technology":
                         # args: [technology, topics_list]
                         if len(args_list) >= 1:
                             params["technology"] = args_list[0]
                             params["topics"] = args_list[1] if len(args_list) > 1 else []
                     
                     elif tool_name == "search_documentation":
-                        # args: [query] or [technology, query]
+                        # args: [query] or [technology, query] or dict with technology/query keys
                         if len(args_list) == 1:
-                            params["query"] = args_list[0]
+                            if isinstance(args_list[0], dict):
+                                params = args_list[0]
+                            else:
+                                params["query"] = args_list[0]
                         elif len(args_list) >= 2:
                             params["technology"] = args_list[0]
                             params["query"] = args_list[1]
