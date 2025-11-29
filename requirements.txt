@@ -11,24 +11,21 @@ openpyxl>=3.1.2
 xlrd>=2.0.1
 
 # Web access
-duckduckgo-search>=4.1.0
+ddgs>=0.1.0  # New package name (preferred)
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
 
 # System monitoring
 psutil>=5.9.0
 
-# Optional: Docker SDK
-docker>=7.0.0
+# Optional: Docker SDK (install separately if needed)
+# docker>=7.0.0
 
-# Optional: Kubernetes client
-kubernetes>=28.1.0
+# Optional: Kubernetes client (install separately if needed)
+# kubernetes>=28.1.0
 
-# Optional: SSH operations
-paramiko>=3.4.0
-
-# Optional: Semantic search (CPU-friendly)
-# sentence-transformers>=2.2.0
+# Optional: SSH operations (install separately if needed)
+# paramiko>=3.4.0
 
 # Config file parsing
 pyyaml>=6.0.1
@@ -39,3 +36,4 @@ cryptography>=41.0.0
 # Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0
+pytest-mock>=3.12.0

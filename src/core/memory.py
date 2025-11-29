@@ -4,6 +4,8 @@ Memory System - Persistent learning and knowledge storage
 
 SQLite-based memory system that stores solutions, custom tools,
 package registry, and user preferences.
+
+Now integrated with KnowledgeBase for enhanced learning.
 """
 
 import sqlite3
@@ -22,17 +24,19 @@ class Memory:
     نظام التعلم والذاكرة المتقدم لوكيل الذكاء الاصطناعي.
     """
     
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: Optional[str] = None, knowledge_base=None):
         """
         Initialize memory system.
         
         Args:
             db_path: Path to SQLite database file (defaults to centralized path)
+            knowledge_base: Optional KnowledgeBase instance for integration
         """
         if db_path is None:
             db_path = get_memory_db_file()
         self.db_path = str(db_path)
         self.conn = sqlite3.connect(self.db_path)
+        self.knowledge_base = knowledge_base  # Optional integration
         self.create_tables()
     
     def create_tables(self):
@@ -151,8 +155,26 @@ class Memory:
             VALUES (?, ?, ?, ?, ?, ?)
         """, (problem, solution, rating, datetime.now().isoformat(), category, tags_str))
         
+        solution_id = cursor.lastrowid
         self.conn.commit()
-        return cursor.lastrowid
+        
+        # Also store in KnowledgeBase if available
+        if self.knowledge_base:
+            try:
+                confidence = rating / 5.0  # Convert rating to confidence
+                self.knowledge_base.store_knowledge(
+                    topic=problem,
+                    content=solution,
+                    category=category,
+                    tags=tags,
+                    source="memory_solution",
+                    confidence=confidence
+                )
+            except Exception as e:
+                # Don't fail if KnowledgeBase storage fails
+                pass
+        
+        return solution_id
     
     def search_similar(self, problem: str, limit: int = 3) -> List[Tuple[str, int]]:
         """

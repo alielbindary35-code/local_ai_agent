@@ -406,10 +406,26 @@ export default App;""")
             with DDGS() as ddgs:
                 # Use region parameter to prefer English results
                 try:
+                    # Try with region parameter first
                     results = list(ddgs.text(query, max_results=max_results * 2, region=region))  # Get more to filter
-                except TypeError:
+                except (TypeError, AttributeError) as e:
                     # Fallback if region parameter is not supported
-                    results = list(ddgs.text(query, max_results=max_results * 2))
+                    try:
+                        results = list(ddgs.text(query, max_results=max_results * 2))
+                    except Exception as e2:
+                        # If both fail, try without any parameters
+                        print(f"⚠️ Search warning: {e2}")
+                        try:
+                            results = list(ddgs.text(query, max_results=max_results))
+                        except:
+                            results = []
+                except Exception as e:
+                    print(f"⚠️ Search error: {e}")
+                    # Try fallback
+                    try:
+                        results = list(ddgs.text(query, max_results=max_results))
+                    except:
+                        results = []
             
             # Filter out Chinese/Asian language and non-English results
             filtered_results = []
@@ -446,8 +462,36 @@ export default App;""")
                         break
             
             # If no results after filtering, return original (but limited)
-            if not filtered_results:
+            if not filtered_results and results:
+                # Return original results if filtering removed everything
                 return results[:max_results]
+            elif not filtered_results and not results:
+                # If search returned nothing, try a simpler query
+                print("⚠️ No search results, trying simpler query...")
+                try:
+                    with DDGS() as ddgs:
+                        # Try with just the main keywords
+                        simple_query = ' '.join(query.split()[:3])  # First 3 words
+                        simple_results = list(ddgs.text(simple_query, max_results=max_results))
+                        if simple_results:
+                            return simple_results
+                        
+                        # Try with just first word
+                        if query.split():
+                            first_word = query.split()[0]
+                            simple_results = list(ddgs.text(first_word, max_results=max_results))
+                            if simple_results:
+                                return simple_results
+                except Exception as e:
+                    print(f"⚠️ Fallback search also failed: {e}")
+                
+                # If all searches fail, return a helpful message with search suggestions
+                return [{
+                    "title": "Search temporarily unavailable",
+                    "body": f"Could not retrieve search results for '{query}'. This might be due to network issues or DuckDuckGo rate limiting. You can try:\n1. Searching manually on DuckDuckGo\n2. Using official documentation sites\n3. Trying again later",
+                    "href": f"https://duckduckgo.com/?q={query.replace(' ', '+')}",
+                    "suggestion": True
+                }]
             
             return filtered_results
         except Exception as e:

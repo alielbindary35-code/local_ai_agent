@@ -19,6 +19,7 @@ from src.tools.tools import Tools
 from src.tools.expert_tools import ExpertTools
 from src.tools.extended_tools import ExtendedTools
 from src.core.memory import Memory
+from src.core.knowledge_base import KnowledgeBase
 from src.core.prompts import get_system_prompt
 from src.utils.connection_checker import ConnectionChecker
 from src.utils.cache_manager import CacheManager
@@ -57,7 +58,8 @@ class ExpertAgent:
         self.tools = Tools()
         self.expert_tools = ExpertTools()
         self.extended_tools = ExtendedTools()
-        self.memory = Memory()
+        self.knowledge_base = KnowledgeBase()
+        self.memory = Memory(knowledge_base=self.knowledge_base)  # Integrate with KnowledgeBase
         self.conversation_history = []
         
         # Get available models
@@ -661,6 +663,22 @@ class ExpertAgent:
             border_style="cyan"
         ))
         
+        # 1. Check knowledge base for similar past knowledge
+        console.print("\n[yellow]🧠 Checking knowledge base for relevant information...[/yellow]")
+        knowledge_results = self.knowledge_base.retrieve_knowledge(
+            query=user_input,
+            category=task_type,
+            limit=3
+        )
+        
+        if knowledge_results:
+            console.print(f"[green]✓ Found {len(knowledge_results)} relevant knowledge entry(ies)[/green]")
+            # Use most relevant knowledge if confidence is high
+            best_match = knowledge_results[0]
+            if best_match["relevance_score"] > 0.7 and best_match["confidence"] > 0.7:
+                console.print(f"[dim]💡 Using stored knowledge: {best_match['topic'][:50]}...[/dim]")
+                # Could potentially use this knowledge to enhance the response
+        
         # Select best model
         selected_model = self._select_best_model(user_input, task_type)
         
@@ -679,6 +697,42 @@ class ExpertAgent:
         elif response.startswith("Error:"):
             console.print(f"[cyan]📊 Status:[/cyan] [red]Error occurred during AI processing[/red]")
         
+        # Clean response: Remove markdown code blocks if present
+        import re
+        if '```' in response:
+            # Extract content from code blocks
+            code_blocks = re.findall(r'```(?:json)?\s*\n?(.*?)```', response, re.DOTALL)
+            if code_blocks:
+                # Use content from code blocks (usually contains JSON)
+                response = '\n'.join(code_blocks)
+        
+        # Handle malformed JSON with multiple "action" keys (split into separate objects)
+        # Pattern: { "action": "...", "action_input": {...}, "action": "...", "action_input": {...} }
+        if '"action"' in response and response.count('"action"') > 1:
+            # Try to split into multiple JSON objects
+            # Find all action blocks
+            action_pattern = r'"action"\s*:\s*"([^"]+)"\s*,\s*"action_input"\s*:\s*(\{[^}]+\})'
+            action_matches = re.findall(action_pattern, response)
+            
+            if action_matches and len(action_matches) > 1:
+                # Create separate JSON objects for each action
+                json_objects = []
+                for action, action_input in action_matches:
+                    json_obj = f'{{"action": "{action}", "action_input": {action_input}}}'
+                    json_objects.append(json_obj)
+                
+                # Replace the malformed JSON with properly formatted ones
+                if json_objects:
+                    # Try to find the original JSON block and replace it
+                    first_brace = response.find('{')
+                    last_brace = response.rfind('}')
+                    if first_brace != -1 and last_brace != -1:
+                        # Replace with first valid JSON, then append others
+                        response = response[:first_brace] + json_objects[0] + response[last_brace+1:]
+                        # Add other JSON objects after
+                        for json_obj in json_objects[1:]:
+                            response += ', ' + json_obj
+        
         # Check for tool calls (Simple heuristic for now)
         # We look for patterns like: tool_name(arg1="val", arg2="val") or JSON format
         
@@ -689,6 +743,8 @@ class ExpertAgent:
         original_response = response
         # Store tool results for placeholder replacement
         tool_results_cache: Dict[str, Any] = {}
+        # Track tools used for learning context
+        tools_used_list: List[str] = []
         
         # Try to find tool calls in the response
         # This is a simplified parser. In production, we'd use structured output or regex
@@ -697,34 +753,61 @@ class ExpertAgent:
         # === STEP 1: Try to parse JSON-style tool calls first ===
         json_tool_calls = []
         try:
-            # Look for JSON objects with "tool" and "args" fields
-            # Use a more robust approach: find complete JSON objects
-            json_pattern = r'\{[^{}]*"tool"\s*:\s*"([^"]+)"[^{}]*"args"\s*:\s*(\[.*?\])\s*[^{}]*\}'
+            # First, try to parse as a JSON array (multiple tool calls)
+            if response.strip().startswith('['):
+                try:
+                    data_array = json.loads(response)
+                    if isinstance(data_array, list):
+                        for item in data_array:
+                            if isinstance(item, dict) and "action" in item:
+                                tool_name = item["action"]
+                                action_input = item.get("action_input", {})
+                                args_list = [action_input] if isinstance(action_input, dict) else [action_input]
+                                json_tool_calls.append((tool_name, args_list))
+                                console.print(f"[cyan]📊 Status:[/cyan] [yellow]Found JSON tool call in array: {tool_name}[/yellow]")
+                except json.JSONDecodeError:
+                    pass
             
-            # For nested structures, we need to handle it differently
-            # Let's try to find all potential JSON blocks first
-            potential_jsons = []
+            # Extract all JSON objects from response (handles multiple objects and nested structures)
+            potential_jsons = []  # Initialize the list
             brace_count = 0
             start_idx = -1
+            in_string = False
+            escape_next = False
             
             for i, char in enumerate(response):
-                if char == '{':
-                    if brace_count == 0:
-                        start_idx = i
-                    brace_count += 1
-                elif char == '}':
-                    brace_count -= 1
-                    if brace_count == 0 and start_idx != -1:
-                        json_str = response[start_idx:i+1]
-                        potential_jsons.append(json_str)
-                        start_idx = -1
+                if escape_next:
+                    escape_next = False
+                    continue
+                
+                if char == '\\':
+                    escape_next = True
+                    continue
+                
+                if char == '"' and not escape_next:
+                    in_string = not in_string
+                    continue
+                
+                if not in_string:
+                    if char == '{':
+                        if brace_count == 0:
+                            start_idx = i
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0 and start_idx != -1:
+                            json_str = response[start_idx:i+1]
+                            potential_jsons.append(json_str)
+                            start_idx = -1
             
-            # Now try to parse each potential JSON
+            # Now try to parse each potential JSON object
             for json_str in potential_jsons:
                 try:
                     data = json.loads(json_str)
                     # Handle both formats: {"tool": "...", "args": [...]} and {"action": "...", "action_input": {...}}
                     if isinstance(data, dict):
+                        # Check if this dict has multiple actions (unusual but possible)
+                        # First, try to find single action
                         tool_name = None
                         args_list = []
                         
@@ -748,10 +831,40 @@ class ExpertAgent:
                             else:
                                 args_list = [action_input]
                         
+                        # Handle multiple actions in same object (e.g., {"action": "...", "action": "..."})
+                        # This shouldn't happen in valid JSON, but we'll handle it
                         if tool_name:
-                            json_tool_calls.append((tool_name, args_list))
-                            console.print(f"[cyan]📊 Status:[/cyan] [yellow]Found JSON tool call: {tool_name}[/yellow]")
-                except (json.JSONDecodeError, KeyError):
+                            # Avoid duplicates
+                            if not any(tc[0] == tool_name and tc[1] == args_list for tc in json_tool_calls):
+                                json_tool_calls.append((tool_name, args_list))
+                                console.print(f"[cyan]📊 Status:[/cyan] [yellow]Found JSON tool call: {tool_name}[/yellow]")
+                        
+                        # Also check for multiple "action" keys (invalid JSON but might be in text)
+                        # This handles cases where AI outputs multiple actions in one object
+                        action_keys = [k for k in data.keys() if k == "action"]
+                        if len(action_keys) > 1:
+                            # This is invalid JSON, but let's try to extract all actions
+                            # Actually, this can't happen in valid JSON - keys must be unique
+                            pass
+                            
+                except (json.JSONDecodeError, KeyError) as e:
+                    # Try to extract actions from malformed JSON (text format)
+                    # Look for "action": "tool_name" patterns
+                    import re
+                    action_matches = re.findall(r'"action"\s*:\s*"([^"]+)"', json_str)
+                    action_input_matches = re.findall(r'"action_input"\s*:\s*(\{[^}]+\})', json_str)
+                    
+                    if action_matches:
+                        for i, action in enumerate(action_matches):
+                            if i < len(action_input_matches):
+                                try:
+                                    action_input = json.loads(action_input_matches[i])
+                                    args_list = [action_input] if isinstance(action_input, dict) else [action_input]
+                                    if not any(tc[0] == action and tc[1] == args_list for tc in json_tool_calls):
+                                        json_tool_calls.append((action, args_list))
+                                        console.print(f"[cyan]📊 Status:[/cyan] [yellow]Found tool call in text: {action}[/yellow]")
+                                except:
+                                    pass
                     continue
                     
         except Exception as e:
@@ -925,63 +1038,15 @@ class ExpertAgent:
                     
                     # Cache tool result for placeholder replacement
                     tool_results_cache[tool_name] = result
+                    tools_used_list.append(tool_name)
                     
-                    # Auto-save search results if task involves learning/saving
+                    # Auto-learn from web search results
                     if tool_name == "search_web" and isinstance(result, list) and len(result) > 0:
-                        # Check if user wants to learn/save
-                        if any(keyword in user_input.lower() for keyword in ["learn", "save", "store", "offline", "knowledge"]):
-                            try:
-                                # Extract technology from user input or use default
-                                tech_keywords = ["system info", "system information", "system"]
-                                technology = "System Information"
-                                for kw in tech_keywords:
-                                    if kw in user_input.lower():
-                                        technology = kw.title()
-                                        break
-                                
-                                # Format search results for saving
-                                formatted_content = []
-                                formatted_content.append(f"# {technology} Best Practices\n\n")
-                                formatted_content.append(f"*Retrieved: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
-                                
-                                # Filter out non-English results
-                                chinese_domains = ['baidu.com', 'zhidao.baidu', 'zhihu.com', 'sina.com', 'qq.com', '163.com', 'sohu.com']
-                                saved_count = 0
-                                
-                                for i, res in enumerate(result[:5], 1):
-                                    if isinstance(res, dict) and not res.get("error"):
-                                        href = res.get('href', '').lower()
-                                        # Skip Chinese domains
-                                        if any(domain in href for domain in chinese_domains):
-                                            continue
-                                        # Check for Chinese/German characters
-                                        title = res.get('title', '')
-                                        body = res.get('body', '')
-                                        chinese_chars = sum(1 for char in (title + body) if '\u4e00' <= char <= '\u9fff')
-                                        german_chars = sum(1 for char in (title + body) if char in 'äöüÄÖÜß')
-                                        total_chars = len(title + body)
-                                        if total_chars > 0:
-                                            if (chinese_chars / total_chars) > 0.2 or (german_chars / total_chars) > 0.3:
-                                                continue
-                                        
-                                        if body and len(body) > 50:
-                                            formatted_content.append(f"## Source {i}: {title}\n\n")
-                                            formatted_content.append(f"{body}\n\n")
-                                            formatted_content.append(f"**Reference:** {res.get('href', '')}\n\n")
-                                            saved_count += 1
-                                
-                                if saved_count > 0:
-                                    # Auto-save to knowledge base
-                                    content_str = "".join(formatted_content)
-                                    self.expert_tools.update_knowledge_base(
-                                        technology=technology,
-                                        content=content_str,
-                                        filename="best_practices.md",
-                                        append=True
-                                    )
-                                    console.print(f"[green]💾 Auto-saved {saved_count} result(s) to knowledge base[/green]")
-                            except Exception as e:
-                                console.print(f"[yellow]⚠️ Auto-save failed: {e}[/yellow]")
+                        try:
+                            # Always try to learn from web searches (automatic learning)
+                            self._learn_from_web_search(user_input, result)
+                        except Exception as e:
+                            console.print(f"[yellow]⚠️ Auto-learning from web search failed: {e}[/yellow]")
                     
                     # Add to final response
                     result_str = str(result)
@@ -1214,63 +1279,15 @@ class ExpertAgent:
                 
                 # Cache tool result for placeholder replacement
                 tool_results_cache[tool_name] = result
+                tools_used_list.append(tool_name)
                 
-                # Auto-save search results if task involves learning/saving (function-style)
+                # Auto-save search results to KnowledgeBase (function-style)
                 if tool_name == "search_web" and isinstance(result, list) and len(result) > 0:
-                    # Check if user wants to learn/save
-                    if any(keyword in user_input.lower() for keyword in ["learn", "save", "store", "offline", "knowledge"]):
-                        try:
-                            # Extract technology from user input or use default
-                            tech_keywords = ["system info", "system information", "system"]
-                            technology = "System Information"
-                            for kw in tech_keywords:
-                                if kw in user_input.lower():
-                                    technology = kw.title()
-                                    break
-                            
-                            # Format search results for saving
-                            formatted_content = []
-                            formatted_content.append(f"# {technology} Best Practices\n\n")
-                            formatted_content.append(f"*Retrieved: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
-                            
-                            # Filter out non-English results
-                            chinese_domains = ['baidu.com', 'zhidao.baidu', 'zhihu.com', 'sina.com', 'qq.com', '163.com', 'sohu.com']
-                            saved_count = 0
-                            
-                            for i, res in enumerate(result[:5], 1):
-                                if isinstance(res, dict) and not res.get("error"):
-                                    href = res.get('href', '').lower()
-                                    # Skip Chinese domains
-                                    if any(domain in href for domain in chinese_domains):
-                                        continue
-                                    # Check for Chinese/German characters
-                                    title = res.get('title', '')
-                                    body = res.get('body', '')
-                                    chinese_chars = sum(1 for char in (title + body) if '\u4e00' <= char <= '\u9fff')
-                                    german_chars = sum(1 for char in (title + body) if char in 'äöüÄÖÜß')
-                                    total_chars = len(title + body)
-                                    if total_chars > 0:
-                                        if (chinese_chars / total_chars) > 0.2 or (german_chars / total_chars) > 0.3:
-                                            continue
-                                    
-                                    if body and len(body) > 50:
-                                        formatted_content.append(f"## Source {i}: {title}\n\n")
-                                        formatted_content.append(f"{body}\n\n")
-                                        formatted_content.append(f"**Reference:** {res.get('href', '')}\n\n")
-                                        saved_count += 1
-                            
-                            if saved_count > 0:
-                                # Auto-save to knowledge base
-                                content_str = "".join(formatted_content)
-                                self.expert_tools.update_knowledge_base(
-                                    technology=technology,
-                                    content=content_str,
-                                    filename="best_practices.md",
-                                    append=True
-                                )
-                                console.print(f"[green]💾 Auto-saved {saved_count} result(s) to knowledge base[/green]")
-                        except Exception as e:
-                            console.print(f"[yellow]⚠️ Auto-save failed: {e}[/yellow]")
+                    try:
+                        # Always try to learn from web searches (automatic learning)
+                        self._learn_from_web_search(user_input, result)
+                    except Exception as e:
+                        console.print(f"[yellow]⚠️ Auto-learning from web search failed: {e}[/yellow]")
                 
                 # Add tool output with separator (only if not already added)
                 result_str = str(result)
@@ -1445,7 +1462,130 @@ class ExpertAgent:
                 border_style="green"
             ))
         
+        # 7. Automatic Learning - Learn from this interaction
+        if self.enable_online_learning and final_response:
+            try:
+                interaction_context = {
+                    "tools_used": tools_used_list,
+                    "category": task_type,
+                    "model_used": selected_model
+                }
+                
+                learned_id = self.knowledge_base.learn_from_interaction(
+                    user_input=user_input,
+                    agent_response=final_response,
+                    interaction_context=interaction_context
+                )
+                
+                if learned_id:
+                    console.print(f"[dim]💡 Knowledge stored (ID: {learned_id})[/dim]")
+                    
+                    # Optionally enhance with AI (only for high-confidence entries)
+                    should_enhance = (
+                        len(final_response) > 200 and
+                        tools_executed_count > 0 and
+                        any(tool in tools_used_list for tool in ["search_web", "learn_new_technology", "search_documentation"])
+                    )
+                    
+                    if should_enhance:
+                        # Enhance in background (non-blocking)
+                        import threading
+                        def enhance():
+                            self.knowledge_base.enhance_knowledge_with_ai(
+                                learned_id,
+                                self.ollama_url,
+                                selected_model
+                            )
+                        threading.Thread(target=enhance, daemon=True).start()
+                        console.print(f"[dim]🤖 AI enhancement queued for knowledge entry[/dim]")
+            except Exception as e:
+                console.print(f"[yellow]⚠️ Learning evaluation failed: {e}[/yellow]")
+        
         return final_response
+    
+    def _learn_from_web_search(self, user_input: str, search_results: List[Dict[str, Any]]):
+        """
+        Automatically learn from web search results and store in KnowledgeBase
+        
+        Args:
+            user_input: Original user query
+            search_results: List of search result dictionaries
+        """
+        if not search_results or not isinstance(search_results, list):
+            return
+        
+        # Filter out non-English results
+        chinese_domains = ['baidu.com', 'zhidao.baidu', 'zhihu.com', 'sina.com', 'qq.com', '163.com', 'sohu.com']
+        english_results = []
+        
+        for res in search_results[:5]:  # Limit to top 5
+            if isinstance(res, dict) and not res.get("error"):
+                href = res.get('href', '').lower()
+                # Skip Chinese domains
+                if any(domain in href for domain in chinese_domains):
+                    continue
+                
+                # Check for Chinese/German characters
+                title = res.get('title', '')
+                body = res.get('body', '')
+                chinese_chars = sum(1 for char in (title + body) if '\u4e00' <= char <= '\u9fff')
+                german_chars = sum(1 for char in (title + body) if char in 'äöüÄÖÜß')
+                total_chars = len(title + body)
+                
+                if total_chars > 0:
+                    if (chinese_chars / total_chars) > 0.2 or (german_chars / total_chars) > 0.3:
+                        continue
+                
+                if body and len(body) > 50:
+                    english_results.append(res)
+        
+        if not english_results:
+            return
+        
+        # Format content for storage
+        formatted_content = []
+        formatted_content.append(f"# Web Search Results: {user_input}\n\n")
+        formatted_content.append(f"*Retrieved: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
+        
+        for i, res in enumerate(english_results, 1):
+            title = res.get('title', 'No title')
+            body = res.get('body', '')
+            href = res.get('href', '')
+            
+            formatted_content.append(f"## Source {i}: {title}\n\n")
+            formatted_content.append(f"{body}\n\n")
+            formatted_content.append(f"**Reference:** {href}\n\n")
+        
+        content_str = "".join(formatted_content)
+        
+        # Detect category from user input
+        category = self._detect_task_type(user_input)
+        
+        # Store in KnowledgeBase
+        try:
+            self.knowledge_base.store_knowledge(
+                topic=user_input[:200],
+                content=content_str,
+                category=category,
+                tags=self._extract_tech_tags(user_input),
+                source="web_search",
+                confidence=0.8
+            )
+            console.print(f"[dim]💡 Learned from {len(english_results)} web search result(s)[/dim]")
+        except Exception as e:
+            console.print(f"[yellow]⚠️ Failed to store web search knowledge: {e}[/yellow]")
+    
+    def _extract_tech_tags(self, text: str) -> List[str]:
+        """Extract technology tags from text"""
+        tech_keywords = [
+            "docker", "python", "javascript", "postgres", "n8n", "react", "vue",
+            "flask", "django", "fastapi", "node", "express", "html", "css",
+            "kubernetes", "terraform", "ansible", "jenkins", "git", "github"
+        ]
+        
+        text_lower = text.lower()
+        tags = [tech for tech in tech_keywords if tech in text_lower]
+        return tags[:5]  # Limit to 5 tags
     
     def _build_expert_prompt(self, user_input: str, model: str) -> str:
         """Build optimized prompt for the selected model"""

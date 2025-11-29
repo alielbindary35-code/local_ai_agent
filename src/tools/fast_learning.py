@@ -97,7 +97,7 @@ class FastLearning:
             tools = Tools()
             
             query = f"{technology} {topic} tutorial documentation"
-            search_results = tools.search_web(query, max_results=3)
+            search_results = tools.search_web(query, max_results=3, region="us-en")
             
             if isinstance(search_results, list):
                 return search_results

@@ -1,6 +1,0 @@
-{
-  "technology": "n8n",
-  "type": "sample_workflow",
-  "code": "// Sample n8n workflow code",
-  "description": "Basic example for n8n"
-}
