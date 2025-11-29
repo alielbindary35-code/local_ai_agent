@@ -344,7 +344,75 @@ volumes:
     # LEARNING TOOLS
     # ═══════════════════════════════════════════════════════════
     
-    def search_documentation(self, technology: str, query: str) -> str:
+    def _get_official_sites(self, technology: str) -> Dict[str, str]:
+        """Get official documentation sites for a technology"""
+        tech_lower = technology.lower()
+        
+        official_sites = {
+            # System Information & OS
+            "system info": "site:docs.microsoft.com OR site:learn.microsoft.com",
+            "system information": "site:docs.microsoft.com OR site:learn.microsoft.com",
+            "windows": "site:docs.microsoft.com OR site:learn.microsoft.com",
+            "linux": "site:www.kernel.org OR site:www.redhat.com OR site:ubuntu.com",
+            "ubuntu": "site:ubuntu.com OR site:help.ubuntu.com",
+            "red hat": "site:access.redhat.com OR site:docs.redhat.com",
+            "centos": "site:wiki.centos.org OR site:docs.centos.org",
+            
+            # Programming Languages
+            "python": "site:docs.python.org",
+            "javascript": "site:developer.mozilla.org OR site:devdocs.io",
+            "typescript": "site:www.typescriptlang.org",
+            "java": "site:docs.oracle.com",
+            "go": "site:go.dev OR site:pkg.go.dev",
+            "rust": "site:doc.rust-lang.org",
+            "c++": "site:en.cppreference.com",
+            "c#": "site:docs.microsoft.com",
+            
+            # Web Frameworks
+            "react": "site:react.dev",
+            "vue": "site:vuejs.org",
+            "angular": "site:angular.io",
+            "nodejs": "site:nodejs.org",
+            "express": "site:expressjs.com",
+            "django": "site:docs.djangoproject.com",
+            "flask": "site:flask.palletsprojects.com",
+            "fastapi": "site:fastapi.tiangolo.com",
+            
+            # DevOps & Cloud
+            "docker": "site:docs.docker.com",
+            "kubernetes": "site:kubernetes.io",
+            "terraform": "site:terraform.io",
+            "ansible": "site:docs.ansible.com",
+            "aws": "site:docs.aws.amazon.com",
+            "azure": "site:docs.microsoft.com/azure",
+            "gcp": "site:cloud.google.com/docs",
+            
+            # Databases
+            "postgres": "site:www.postgresql.org/docs",
+            "postgresql": "site:www.postgresql.org/docs",
+            "mysql": "site:dev.mysql.com/doc",
+            "mongodb": "site:docs.mongodb.com",
+            "redis": "site:redis.io/docs",
+            
+            # Tools
+            "git": "site:git-scm.com/doc",
+            "github": "site:docs.github.com",
+            "n8n": "site:docs.n8n.io",
+        }
+        
+        # Try exact match first
+        if tech_lower in official_sites:
+            return {"site_filter": official_sites[tech_lower]}
+        
+        # Try partial match
+        for key, site_filter in official_sites.items():
+            if key in tech_lower or tech_lower in key:
+                return {"site_filter": site_filter}
+        
+        # Default: use trusted sites
+        return {"site_filter": "site:docs.microsoft.com OR site:developer.mozilla.org OR site:stackoverflow.com OR site:github.com"}
+    
+    def search_documentation(self, technology: str, query: str, use_cache: bool = True) -> str:
         """Search official documentation online and fetch actual content"""
         # Check internet connection
         online = self.connection_checker.check_internet()
@@ -361,20 +429,66 @@ volumes:
             from src.tools.tools import Tools
             tools = Tools()
             
-            # Search for documentation
-            search_query = f"{technology} {query} documentation"
-            results = tools.search_web(search_query, max_results=3)
+            # Get official sites filter
+            official_sites = self._get_official_sites(technology)
+            site_filter = official_sites.get("site_filter", "")
+            
+            # Build better search query - prioritize official sites
+            if "best practices" in query.lower() or "practices" in query.lower():
+                search_query = f"{site_filter} {technology} best practices guide tutorial"
+            elif "examples" in query.lower() or "example" in query.lower():
+                search_query = f"{site_filter} {technology} examples code samples"
+            else:
+                search_query = f"{site_filter} {technology} {query} documentation guide"
+            
+            console.print(f"[cyan]🔍 Searching official sites first...[/cyan]")
+            results = tools.search_web(search_query, max_results=5, region="us-en")
+            
+            # If no results from official sites, try general search
+            if not results or len(results) == 0 or all(r.get("error") for r in results if isinstance(r, dict)):
+                console.print(f"[yellow]⚠️ No results from official sites, trying general search...[/yellow]")
+                if "best practices" in query.lower() or "practices" in query.lower():
+                    search_query = f"{technology} best practices guide tutorial"
+                elif "examples" in query.lower() or "example" in query.lower():
+                    search_query = f"{technology} examples code samples"
+                else:
+                    search_query = f"{technology} {query} documentation guide"
+                results = tools.search_web(search_query, max_results=5, region="us-en")
             
             content = ""
             if results and isinstance(results, list) and len(results) > 0:
-                content = f"📚 Documentation Search Results for {technology} ({query}):\n\n"
-                for i, result in enumerate(results[:3], 1):
-                    title = result.get('title', 'No title')
-                    snippet = result.get('body', result.get('snippet', 'No description'))
-                    url = result.get('href', result.get('url', 'No URL'))
-                    content += f"{i}. **{title}**\n"
-                    content += f"   {snippet[:200]}...\n"
-                    content += f"   🔗 {url}\n\n"
+                # Filter out Chinese results even after search_web filtering
+                english_results = []
+                chinese_domains = ['baidu.com', 'zhidao.baidu', 'zhihu.com', 'sina.com', 'qq.com', '163.com', 'sohu.com']
+                
+                for result in results:
+                    if isinstance(result, dict) and not result.get("error"):
+                        href = result.get('href', '').lower()
+                        # Skip Chinese domains
+                        if any(domain in href for domain in chinese_domains):
+                            continue
+                        # Check for Chinese characters in title/body
+                        title = result.get('title', '')
+                        body = result.get('body', result.get('snippet', ''))
+                        chinese_chars = sum(1 for char in (title + body) if '\u4e00' <= char <= '\u9fff')
+                        total_chars = len(title + body)
+                        if total_chars > 0 and (chinese_chars / total_chars) > 0.2:  # More than 20% Chinese
+                            continue
+                        english_results.append(result)
+                        if len(english_results) >= 3:
+                            break
+                
+                if english_results:
+                    content = f"📚 Documentation Search Results for {technology} ({query}):\n\n"
+                    for i, result in enumerate(english_results, 1):
+                        title = result.get('title', 'No title')
+                        snippet = result.get('body', result.get('snippet', 'No description'))
+                        url = result.get('href', result.get('url', 'No URL'))
+                        content += f"{i}. **{title}**\n"
+                        content += f"   {snippet[:300]}...\n"
+                        content += f"   🔗 {url}\n\n"
+                else:
+                    content = f"⚠️ No English results found for {technology} ({query}). Please try a different search query.\n\n"
             else:
                 # Fallback to URL if search fails
                 doc_urls = {

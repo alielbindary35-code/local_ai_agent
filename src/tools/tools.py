@@ -383,18 +383,73 @@ export default App;""")
     # WEB ACCESS TOOLS - أدوات الوصول للويب
     # ═══════════════════════════════════════════════════════════
     
-    def search_web(self, query: str, max_results: int = 5) -> List[Dict[str, str]]:
+    def search_web(self, query: str, max_results: int = 5, region: str = "us-en", prefer_official: bool = True) -> List[Dict[str, str]]:
         """
         Search the web using DuckDuckGo.
         البحث في الإنترنت باستخدام DuckDuckGo.
+        
+        Args:
+            query: Search query
+            max_results: Maximum number of results
+            region: Search region (us-en for English, ww for worldwide)
+            prefer_official: If True, prioritize official documentation sites
         """
         try:
             if DDGS is None:
                 return [{"error": "DuckDuckGo search not available. Please install: pip install ddgs"}]
             
+            # Detect if query is about system info and add official sites
+            if prefer_official and ("system info" in query.lower() or "system information" in query.lower()):
+                # Add Microsoft Docs filter for system info
+                query = f"site:docs.microsoft.com OR site:learn.microsoft.com {query}"
+            
             with DDGS() as ddgs:
-                results = list(ddgs.text(query, max_results=max_results))
-            return results
+                # Use region parameter to prefer English results
+                try:
+                    results = list(ddgs.text(query, max_results=max_results * 2, region=region))  # Get more to filter
+                except TypeError:
+                    # Fallback if region parameter is not supported
+                    results = list(ddgs.text(query, max_results=max_results * 2))
+            
+            # Filter out Chinese/Asian language and non-English results
+            filtered_results = []
+            chinese_domains = ['baidu.com', 'zhidao.baidu', 'zhihu.com', 'sina.com', 'qq.com', '163.com', 'sohu.com']
+            german_domains = ['juraforum.de']  # Add more if needed
+            
+            for result in results:
+                if isinstance(result, dict):
+                    href = result.get('href', '').lower()
+                    title = result.get('title', '')
+                    body = result.get('body', '')
+                    
+                    # Skip if from Chinese domains
+                    if any(domain in href for domain in chinese_domains):
+                        continue
+                    
+                    # Skip if from German domains (unless specifically needed)
+                    if any(domain in href for domain in german_domains) and region == "us-en":
+                        continue
+                    
+                    # Skip if title/body contains too many Chinese characters
+                    chinese_chars = sum(1 for char in (title + body) if '\u4e00' <= char <= '\u9fff')
+                    # Skip if title/body contains too many German characters (ä, ö, ü, ß)
+                    german_chars = sum(1 for char in (title + body) if char in 'äöüÄÖÜß')
+                    total_chars = len(title + body)
+                    if total_chars > 0:
+                        if (chinese_chars / total_chars) > 0.3:  # More than 30% Chinese
+                            continue
+                        if (german_chars / total_chars) > 0.3 and region == "us-en":  # More than 30% German
+                            continue
+                    
+                    filtered_results.append(result)
+                    if len(filtered_results) >= max_results:
+                        break
+            
+            # If no results after filtering, return original (but limited)
+            if not filtered_results:
+                return results[:max_results]
+            
+            return filtered_results
         except Exception as e:
             return [{"error": str(e)}]
     

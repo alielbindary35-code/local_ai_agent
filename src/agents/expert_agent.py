@@ -687,6 +687,8 @@ class ExpertAgent:
         # Start with empty response, we'll build it from tool results and cleaned explanation
         final_response = ""
         original_response = response
+        # Store tool results for placeholder replacement
+        tool_results_cache: Dict[str, Any] = {}
         
         # Try to find tool calls in the response
         # This is a simplified parser. In production, we'd use structured output or regex
@@ -777,6 +779,40 @@ class ExpertAgent:
                     # If args_list contains a dict (from action_input format), use it directly
                     if len(args_list) == 1 and isinstance(args_list[0], dict):
                         params = args_list[0].copy()  # Use dict directly from action_input
+                        
+                        # Replace placeholders with actual tool results
+                        if "content" in params:
+                            content = params["content"]
+                            # Replace {search results} or [...] placeholders
+                            if isinstance(content, str) and (
+                                "{search results}" in content.lower() or 
+                                "[...system info" in content.lower() or 
+                                "[...system info examples" in content.lower() or
+                                content.strip() in ["{search results}", "[...system info best practices...]", "[...system info examples...]"]
+                            ):
+                                # Find most recent search_web result
+                                if "search_web" in tool_results_cache:
+                                    search_results = tool_results_cache["search_web"]
+                                    # Convert search results to readable text
+                                    if isinstance(search_results, list):
+                                        formatted_results = []
+                                        formatted_results.append("# System Information Best Practices\n\n")
+                                        formatted_results.append(f"*Retrieved: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
+                                        
+                                        for i, result in enumerate(search_results[:5], 1):
+                                            if isinstance(result, dict) and not result.get("error"):
+                                                title = result.get("title", "No title")
+                                                body = result.get("body", "No content")
+                                                href = result.get("href", "")
+                                                # Only include substantial content
+                                                if body and len(body) > 50:
+                                                    formatted_results.append(f"## Source {i}: {title}\n\n")
+                                                    formatted_results.append(f"{body}\n\n")
+                                                    formatted_results.append(f"**Reference:** {href}\n\n")
+                                        
+                                        params["content"] = "\n".join(formatted_results) if len(formatted_results) > 2 else "No valid search results found"
+                                    else:
+                                        params["content"] = str(search_results)
                     elif tool_name == "learn_new_technology":
                         # args: [technology, topics_list]
                         if len(args_list) >= 1:
@@ -887,6 +923,66 @@ class ExpertAgent:
                     else:
                         console.print(f"[cyan]📊 Status:[/cyan] [yellow]Tool execution completed[/yellow]")
                     
+                    # Cache tool result for placeholder replacement
+                    tool_results_cache[tool_name] = result
+                    
+                    # Auto-save search results if task involves learning/saving
+                    if tool_name == "search_web" and isinstance(result, list) and len(result) > 0:
+                        # Check if user wants to learn/save
+                        if any(keyword in user_input.lower() for keyword in ["learn", "save", "store", "offline", "knowledge"]):
+                            try:
+                                # Extract technology from user input or use default
+                                tech_keywords = ["system info", "system information", "system"]
+                                technology = "System Information"
+                                for kw in tech_keywords:
+                                    if kw in user_input.lower():
+                                        technology = kw.title()
+                                        break
+                                
+                                # Format search results for saving
+                                formatted_content = []
+                                formatted_content.append(f"# {technology} Best Practices\n\n")
+                                formatted_content.append(f"*Retrieved: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
+                                
+                                # Filter out non-English results
+                                chinese_domains = ['baidu.com', 'zhidao.baidu', 'zhihu.com', 'sina.com', 'qq.com', '163.com', 'sohu.com']
+                                saved_count = 0
+                                
+                                for i, res in enumerate(result[:5], 1):
+                                    if isinstance(res, dict) and not res.get("error"):
+                                        href = res.get('href', '').lower()
+                                        # Skip Chinese domains
+                                        if any(domain in href for domain in chinese_domains):
+                                            continue
+                                        # Check for Chinese/German characters
+                                        title = res.get('title', '')
+                                        body = res.get('body', '')
+                                        chinese_chars = sum(1 for char in (title + body) if '\u4e00' <= char <= '\u9fff')
+                                        german_chars = sum(1 for char in (title + body) if char in 'äöüÄÖÜß')
+                                        total_chars = len(title + body)
+                                        if total_chars > 0:
+                                            if (chinese_chars / total_chars) > 0.2 or (german_chars / total_chars) > 0.3:
+                                                continue
+                                        
+                                        if body and len(body) > 50:
+                                            formatted_content.append(f"## Source {i}: {title}\n\n")
+                                            formatted_content.append(f"{body}\n\n")
+                                            formatted_content.append(f"**Reference:** {res.get('href', '')}\n\n")
+                                            saved_count += 1
+                                
+                                if saved_count > 0:
+                                    # Auto-save to knowledge base
+                                    content_str = "".join(formatted_content)
+                                    self.expert_tools.update_knowledge_base(
+                                        technology=technology,
+                                        content=content_str,
+                                        filename="best_practices.md",
+                                        append=True
+                                    )
+                                    console.print(f"[green]💾 Auto-saved {saved_count} result(s) to knowledge base[/green]")
+                            except Exception as e:
+                                console.print(f"[yellow]⚠️ Auto-save failed: {e}[/yellow]")
+                    
                     # Add to final response
                     result_str = str(result)
                     if result_str not in final_response:
@@ -979,9 +1075,37 @@ class ExpertAgent:
                                 
                         elif tool_name == "update_knowledge_base":
                             if len(args_matches) >= 2:
+                                content = args_matches[1]
+                                # Replace placeholders with actual results
+                                if isinstance(content, str) and (
+                                    "{search results}" in content.lower() or 
+                                    "[...system info" in content.lower() or 
+                                    content.strip() in ["{search results}", "[...system info best practices...]", "[...system info examples...]"]
+                                ):
+                                    if "search_web" in tool_results_cache:
+                                        search_results = tool_results_cache["search_web"]
+                                        if isinstance(search_results, list):
+                                            formatted_results = []
+                                            formatted_results.append("# System Information\n\n")
+                                            formatted_results.append(f"*Retrieved: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
+                                            
+                                            for i, result in enumerate(search_results[:5], 1):
+                                                if isinstance(result, dict) and not result.get("error"):
+                                                    title = result.get("title", "No title")
+                                                    body = result.get("body", "No content")
+                                                    href = result.get("href", "")
+                                                    if body and len(body) > 50:
+                                                        formatted_results.append(f"## Source {i}: {title}\n\n")
+                                                        formatted_results.append(f"{body}\n\n")
+                                                        formatted_results.append(f"**Reference:** {href}\n\n")
+                                            
+                                            content = "\n".join(formatted_results) if len(formatted_results) > 2 else "No valid search results found"
+                                        else:
+                                            content = str(search_results)
+                                
                                 params = {
                                     "technology": args_matches[0],
-                                    "content": args_matches[1],
+                                    "content": content,
                                     "filename": args_matches[2] if len(args_matches) > 2 else "overview.md",
                                     "append": args_matches[3].lower() == "true" if len(args_matches) > 3 else False
                                 }
@@ -1053,6 +1177,9 @@ class ExpertAgent:
                      params["query"] = "general"
                 if tool_name == "search_web" and "query" not in params and args_matches:
                     params["query"] = args_matches[0]
+                # Add region parameter for English results
+                if tool_name == "search_web" and "region" not in params:
+                    params["region"] = "us-en"
                 
                 # Validate params for specific tools before execution
                 if tool_name == "write_file":
@@ -1084,6 +1211,66 @@ class ExpertAgent:
                     console.print(f"[cyan]📊 Status:[/cyan] [red]Tool encountered an error[/red]")
                 else:
                     console.print(f"[cyan]📊 Status:[/cyan] [yellow]Tool execution completed[/yellow]")
+                
+                # Cache tool result for placeholder replacement
+                tool_results_cache[tool_name] = result
+                
+                # Auto-save search results if task involves learning/saving (function-style)
+                if tool_name == "search_web" and isinstance(result, list) and len(result) > 0:
+                    # Check if user wants to learn/save
+                    if any(keyword in user_input.lower() for keyword in ["learn", "save", "store", "offline", "knowledge"]):
+                        try:
+                            # Extract technology from user input or use default
+                            tech_keywords = ["system info", "system information", "system"]
+                            technology = "System Information"
+                            for kw in tech_keywords:
+                                if kw in user_input.lower():
+                                    technology = kw.title()
+                                    break
+                            
+                            # Format search results for saving
+                            formatted_content = []
+                            formatted_content.append(f"# {technology} Best Practices\n\n")
+                            formatted_content.append(f"*Retrieved: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
+                            
+                            # Filter out non-English results
+                            chinese_domains = ['baidu.com', 'zhidao.baidu', 'zhihu.com', 'sina.com', 'qq.com', '163.com', 'sohu.com']
+                            saved_count = 0
+                            
+                            for i, res in enumerate(result[:5], 1):
+                                if isinstance(res, dict) and not res.get("error"):
+                                    href = res.get('href', '').lower()
+                                    # Skip Chinese domains
+                                    if any(domain in href for domain in chinese_domains):
+                                        continue
+                                    # Check for Chinese/German characters
+                                    title = res.get('title', '')
+                                    body = res.get('body', '')
+                                    chinese_chars = sum(1 for char in (title + body) if '\u4e00' <= char <= '\u9fff')
+                                    german_chars = sum(1 for char in (title + body) if char in 'äöüÄÖÜß')
+                                    total_chars = len(title + body)
+                                    if total_chars > 0:
+                                        if (chinese_chars / total_chars) > 0.2 or (german_chars / total_chars) > 0.3:
+                                            continue
+                                    
+                                    if body and len(body) > 50:
+                                        formatted_content.append(f"## Source {i}: {title}\n\n")
+                                        formatted_content.append(f"{body}\n\n")
+                                        formatted_content.append(f"**Reference:** {res.get('href', '')}\n\n")
+                                        saved_count += 1
+                            
+                            if saved_count > 0:
+                                # Auto-save to knowledge base
+                                content_str = "".join(formatted_content)
+                                self.expert_tools.update_knowledge_base(
+                                    technology=technology,
+                                    content=content_str,
+                                    filename="best_practices.md",
+                                    append=True
+                                )
+                                console.print(f"[green]💾 Auto-saved {saved_count} result(s) to knowledge base[/green]")
+                        except Exception as e:
+                            console.print(f"[yellow]⚠️ Auto-save failed: {e}[/yellow]")
                 
                 # Add tool output with separator (only if not already added)
                 result_str = str(result)
