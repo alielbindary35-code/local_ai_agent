@@ -49,7 +49,8 @@ class KnowledgeBase:
         ensure_dir(self.kb_dir)
         
         # Initialize database connection
-        self.conn = sqlite3.connect(self.db_path)
+        # Use check_same_thread=False to allow use in different threads
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.create_tables()
         
         # In-memory cache for frequently accessed knowledge

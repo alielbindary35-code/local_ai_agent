@@ -60,6 +60,11 @@ data/agent_memory*.db
 data/logs/*.log
 data/logs_backup/
 *.db-journal
+data/knowledge_base/
+
+# Desktop App build files
+desktop_app/__pycache__/
+desktop_app/*.pyc
 
 # Temporary files
 *.tmp

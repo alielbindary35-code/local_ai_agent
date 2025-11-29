@@ -1,0 +1,11 @@
+{
+  "name": "Python Django Project",
+  "type": "python",
+  "framework": "django",
+  "structure": {
+    "requirements.txt": "django\ndjangorestframework\npsycopg2-binary",
+    "requirements-dev.txt": "pytest\npytest-django\nblack\nflake8",
+    "README.md": "# Django Project\n\n## Installation\n```bash\npip install -r requirements.txt\n```\n\n## Setup\n```bash\ndjango-admin startproject project_name .\npython manage.py migrate\n```"
+  }
+}
+

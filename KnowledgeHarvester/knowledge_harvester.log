@@ -1,0 +1,97 @@
+2025-11-29 19:47:06,147 - __main__ - INFO - Starting harvest of 3 URLs...
+2025-11-29 19:47:06,207 - __main__ - INFO - Processing category: ollama
+2025-11-29 19:47:06,208 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/README.md (Attempt 1/3)
+2025-11-29 19:47:08,019 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-documentation.md
+2025-11-29 19:47:09,034 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/api.md (Attempt 1/3)
+2025-11-29 19:47:10,592 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-api.md
+2025-11-29 19:47:11,604 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md (Attempt 1/3)
+2025-11-29 19:47:13,257 - modules.downloader - ERROR - Error downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md: 404 Client Error: Not Found for url: https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+2025-11-29 19:47:14,257 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md (Attempt 2/3)
+2025-11-29 19:47:15,584 - modules.downloader - ERROR - Error downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md: 404 Client Error: Not Found for url: https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+2025-11-29 19:47:17,585 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md (Attempt 3/3)
+2025-11-29 19:47:18,809 - modules.downloader - ERROR - Error downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md: 404 Client Error: Not Found for url: https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+2025-11-29 19:47:18,810 - modules.downloader - ERROR - Failed to download https://github.com/ollama/ollama/blob/main/docs/modelfile.md after 3 attempts
+2025-11-29 19:47:18,813 - __main__ - INFO - Harvest complete!
+2025-11-29 19:49:12,980 - __main__ - INFO - Starting harvest of 3 URLs...
+2025-11-29 19:49:12,992 - __main__ - INFO - Processing category: ollama
+2025-11-29 19:49:12,992 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/README.md (Attempt 1/3)
+2025-11-29 19:49:13,954 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-documentation.md
+2025-11-29 19:49:14,974 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/api.md (Attempt 1/3)
+2025-11-29 19:49:16,051 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-api.md
+2025-11-29 19:49:17,059 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md (Attempt 1/3)
+2025-11-29 19:49:19,798 - modules.downloader - ERROR - Error downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md: 404 Client Error: Not Found for url: https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+2025-11-29 19:49:20,799 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md (Attempt 2/3)
+2025-11-29 19:49:21,610 - modules.downloader - ERROR - Error downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md: 404 Client Error: Not Found for url: https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+2025-11-29 19:49:23,610 - modules.downloader - INFO - Downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md (Attempt 3/3)
+2025-11-29 19:49:24,521 - modules.downloader - ERROR - Error downloading https://github.com/ollama/ollama/blob/main/docs/modelfile.md: 404 Client Error: Not Found for url: https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+2025-11-29 19:49:24,521 - modules.downloader - ERROR - Failed to download https://github.com/ollama/ollama/blob/main/docs/modelfile.md after 3 attempts
+2025-11-29 19:49:24,524 - __main__ - INFO - Harvest complete!
+2025-11-29 19:53:43,491 - __main__ - INFO - Starting harvest of 3 URLs...
+2025-11-29 19:53:43,536 - __main__ - INFO - Processing category: ollama
+2025-11-29 19:53:43,538 - __main__ - INFO - Converted GitHub URL to raw: https://raw.githubusercontent.com/ollama/ollama/main/docs/README.md
+2025-11-29 19:53:43,539 - modules.downloader - INFO - Downloading https://raw.githubusercontent.com/ollama/ollama/main/docs/README.md (Attempt 1/3)
+2025-11-29 19:53:45,067 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-documentation.md
+2025-11-29 19:53:46,087 - __main__ - INFO - Converted GitHub URL to raw: https://raw.githubusercontent.com/ollama/ollama/main/docs/api.md
+2025-11-29 19:53:46,087 - modules.downloader - INFO - Downloading https://raw.githubusercontent.com/ollama/ollama/main/docs/api.md (Attempt 1/3)
+2025-11-29 19:53:47,305 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-api.md
+2025-11-29 19:53:48,312 - modules.downloader - INFO - Downloading https://docs.ollama.com/modelfile (Attempt 1/3)
+2025-11-29 19:53:50,218 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-modelfile.html
+2025-11-29 19:53:51,757 - __main__ - INFO - Harvest complete!
+2025-11-29 20:02:36,416 - __main__ - INFO - Starting harvest of 23 URLs...
+2025-11-29 20:02:36,433 - __main__ - INFO - Processing category: python_data
+2025-11-29 20:02:36,434 - modules.downloader - INFO - Downloading https://pandas.pydata.org/docs/user_guide/index.html (Attempt 1/3)
+2025-11-29 20:02:37,213 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\python_data\pandas-user-guide.html
+2025-11-29 20:02:38,308 - modules.downloader - INFO - Downloading https://numpy.org/doc/stable/user/index.html (Attempt 1/3)
+2025-11-29 20:02:38,956 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\python_data\numpy-user-guide.html
+2025-11-29 20:02:39,983 - __main__ - INFO - Processing category: javascript_nodejs
+2025-11-29 20:02:39,983 - modules.downloader - INFO - Downloading https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide (Attempt 1/3)
+2025-11-29 20:02:40,644 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\javascript_nodejs\mdn-javascript-guide.html
+2025-11-29 20:02:41,741 - modules.downloader - INFO - Downloading https://nodejs.org/en/docs/guides/getting-started-guide/ (Attempt 1/3)
+2025-11-29 20:02:42,590 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\javascript_nodejs\nodejs-getting-started.html
+2025-11-29 20:02:43,659 - modules.downloader - INFO - Downloading https://nodejs.org/api/documentation.html (Attempt 1/3)
+2025-11-29 20:02:44,374 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\javascript_nodejs\nodejs-api-documentation.html
+2025-11-29 20:02:45,439 - __main__ - INFO - Processing category: docker
+2025-11-29 20:02:45,440 - modules.downloader - INFO - Downloading https://docs.docker.com/get-started/ (Attempt 1/3)
+2025-11-29 20:02:45,934 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\docker\docker-get-started.html
+2025-11-29 20:02:46,973 - modules.downloader - INFO - Downloading https://docs.docker.com/develop/develop-images/dockerfile_best-practices/ (Attempt 1/3)
+2025-11-29 20:02:47,510 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\docker\dockerfile-best-practices.html
+2025-11-29 20:02:48,762 - modules.downloader - INFO - Downloading https://docs.docker.com/compose/production/ (Attempt 1/3)
+2025-11-29 20:02:49,255 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\docker\docker-compose-in-production.html
+2025-11-29 20:02:50,379 - modules.downloader - INFO - Downloading https://docs.docker.com/security/for-developers/access-tokens/ (Attempt 1/3)
+2025-11-29 20:02:50,888 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\docker\docker-security-access-tokens.html
+2025-11-29 20:02:52,008 - __main__ - INFO - Processing category: postgresql
+2025-11-29 20:02:52,009 - modules.downloader - INFO - Downloading https://www.postgresql.org/docs/current/tutorial.html (Attempt 1/3)
+2025-11-29 20:02:53,293 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\postgresql\postgresql-tutorial.html
+2025-11-29 20:02:54,336 - modules.downloader - INFO - Downloading https://www.postgresql.org/docs/current/performance-tips.html (Attempt 1/3)
+2025-11-29 20:02:55,387 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\postgresql\postgresql-performance-tips.html
+2025-11-29 20:02:56,416 - modules.downloader - INFO - Downloading https://www.postgresql.org/docs/current/server-start.html (Attempt 1/3)
+2025-11-29 20:02:57,409 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\postgresql\postgresql-server-administration.html
+2025-11-29 20:02:58,445 - modules.downloader - INFO - Downloading https://www.postgresql.org/docs/current/sql.html (Attempt 1/3)
+2025-11-29 20:02:59,509 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\postgresql\postgresql-sql-language.html
+2025-11-29 20:03:00,558 - __main__ - INFO - Processing category: n8n
+2025-11-29 20:03:00,558 - modules.downloader - INFO - Downloading https://docs.n8n.io/ (Attempt 1/3)
+2025-11-29 20:03:01,167 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\n8n\n8n-documentation-home.html
+2025-11-29 20:03:02,408 - modules.downloader - INFO - Downloading https://docs.n8n.io/workflows/components/ (Attempt 1/3)
+2025-11-29 20:03:02,976 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\n8n\n8n-workflow-components.html
+2025-11-29 20:03:04,220 - modules.downloader - INFO - Downloading https://docs.n8n.io/integrations/builtin/core-nodes/ (Attempt 1/3)
+2025-11-29 20:03:04,768 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\n8n\n8n-core-nodes.html
+2025-11-29 20:03:06,017 - modules.downloader - INFO - Downloading https://docs.n8n.io/hosting/ (Attempt 1/3)
+2025-11-29 20:03:06,582 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\n8n\n8n-hosting.html
+2025-11-29 20:03:07,839 - __main__ - INFO - Processing category: ollama
+2025-11-29 20:03:07,840 - __main__ - INFO - Converted GitHub URL to raw: https://raw.githubusercontent.com/ollama/ollama/main/docs/README.md
+2025-11-29 20:03:07,840 - modules.downloader - INFO - Downloading https://raw.githubusercontent.com/ollama/ollama/main/docs/README.md (Attempt 1/3)
+2025-11-29 20:03:08,474 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-documentation.md
+2025-11-29 20:03:09,487 - __main__ - INFO - Converted GitHub URL to raw: https://raw.githubusercontent.com/ollama/ollama/main/docs/api.md
+2025-11-29 20:03:09,487 - modules.downloader - INFO - Downloading https://raw.githubusercontent.com/ollama/ollama/main/docs/api.md (Attempt 1/3)
+2025-11-29 20:03:10,078 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-api.md
+2025-11-29 20:03:11,084 - modules.downloader - INFO - Downloading https://docs.ollama.com/modelfile (Attempt 1/3)
+2025-11-29 20:03:12,119 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\ollama\ollama-modelfile.html
+2025-11-29 20:03:13,221 - __main__ - INFO - Processing category: general_ai
+2025-11-29 20:03:13,221 - __main__ - INFO - Converted GitHub URL to raw: https://raw.githubusercontent.com/microsoft/generative-ai-for-beginners/main/README.md
+2025-11-29 20:03:13,221 - modules.downloader - INFO - Downloading https://raw.githubusercontent.com/microsoft/generative-ai-for-beginners/main/README.md (Attempt 1/3)
+2025-11-29 20:03:13,822 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\general_ai\generative-ai-for-beginners.md
+2025-11-29 20:03:14,832 - modules.downloader - INFO - Downloading https://developers.google.com/machine-learning/crash-course/ml-intro (Attempt 1/3)
+2025-11-29 20:03:15,869 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\general_ai\google-ml-crash-course-intro.html
+2025-11-29 20:03:16,941 - modules.downloader - INFO - Downloading https://aws.amazon.com/what-is/large-language-model/ (Attempt 1/3)
+2025-11-29 20:03:17,460 - modules.downloader - INFO - Successfully downloaded to C:\Users\engha\Music\New folder1\local_ai_agent\KnowledgeHarvester\data/materials\general_ai\aws-what-is-an-llm.html
+2025-11-29 20:03:18,518 - __main__ - INFO - Harvest complete!

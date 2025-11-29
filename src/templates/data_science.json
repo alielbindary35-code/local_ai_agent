@@ -1,0 +1,22 @@
+{
+  "name": "Data Science Project",
+  "type": "python",
+  "framework": "data_science",
+  "structure": {
+    "notebooks/": {
+      "01_exploration.ipynb": "# Data Exploration Notebook",
+      "02_analysis.ipynb": "# Data Analysis Notebook"
+    },
+    "src/": {
+      "data_processing.py": "import pandas as pd\nimport numpy as np\n\ndef load_data(filepath):\n    return pd.read_csv(filepath)\n\ndef clean_data(df):\n    return df.dropna()\n",
+      "visualization.py": "import matplotlib.pyplot as plt\nimport seaborn as sns\n\ndef plot_distribution(data):\n    plt.figure(figsize=(10, 6))\n    sns.histplot(data)\n    plt.show()\n"
+    },
+    "data/": {
+      ".gitkeep": ""
+    },
+    "requirements.txt": "pandas\nnumpy\nmatplotlib\nseaborn\nscikit-learn\njupyter",
+    "requirements-dev.txt": "pytest\npytest-cov\njupyterlab",
+    "README.md": "# Data Science Project\n\n## Setup\n```bash\npip install -r requirements.txt\njupyter lab\n```"
+  }
+}
+

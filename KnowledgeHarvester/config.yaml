@@ -1,0 +1,125 @@
+# Knowledge Harvester Configuration
+
+# Download Settings
+download_settings:
+  user_agent: "KnowledgeHarvester/1.0 (Educational AI Agent)"
+  timeout_seconds: 30
+  max_retries: 3
+  delay_between_requests: 1.0  # Seconds to wait between requests to respect servers
+  verify_ssl: true
+
+# Output Paths (Relative to project root)
+paths:
+  base_data: "data"
+  materials: "data/materials"
+  extracted: "data/extracted"
+  chunks: "data/chunks"
+  metadata: "data/metadata"
+  logs: "logs"
+
+# Content Processing
+processing:
+  chunk_size: 1000
+  chunk_overlap: 200
+  extract_images: false
+
+# Documentation Sources
+sources:
+  python_data:
+    base_url: "https://pandas.pydata.org"
+    urls:
+      - url: "https://pandas.pydata.org/docs/user_guide/index.html"
+        title: "Pandas User Guide"
+        type: "html"
+      - url: "https://numpy.org/doc/stable/user/index.html"
+        title: "NumPy User Guide"
+        type: "html"
+
+  javascript_nodejs:
+    base_url: "https://developer.mozilla.org"
+    urls:
+      - url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
+        title: "MDN JavaScript Guide"
+        type: "html"
+      - url: "https://nodejs.org/en/docs/guides/getting-started-guide/"
+        title: "Node.js Getting Started"
+        type: "html"
+      - url: "https://nodejs.org/api/documentation.html"
+        title: "Node.js API Documentation"
+        type: "html"
+
+  docker:
+    base_url: "https://docs.docker.com"
+    urls:
+      - url: "https://docs.docker.com/get-started/"
+        title: "Docker Get Started"
+        type: "html"
+      - url: "https://docs.docker.com/develop/develop-images/dockerfile_best-practices/"
+        title: "Dockerfile Best Practices"
+        type: "html"
+      - url: "https://docs.docker.com/compose/production/"
+        title: "Docker Compose in Production"
+        type: "html"
+      - url: "https://docs.docker.com/security/for-developers/access-tokens/"
+        title: "Docker Security Access Tokens"
+        type: "html"
+
+  postgresql:
+    base_url: "https://www.postgresql.org/docs/current"
+    urls:
+      - url: "https://www.postgresql.org/docs/current/tutorial.html"
+        title: "PostgreSQL Tutorial"
+        type: "html"
+      - url: "https://www.postgresql.org/docs/current/performance-tips.html"
+        title: "PostgreSQL Performance Tips"
+        type: "html"
+      - url: "https://www.postgresql.org/docs/current/server-start.html"
+        title: "PostgreSQL Server Administration"
+        type: "html"
+      - url: "https://www.postgresql.org/docs/current/sql.html"
+        title: "PostgreSQL SQL Language"
+        type: "html"
+
+  n8n:
+    base_url: "https://docs.n8n.io"
+    urls:
+      - url: "https://docs.n8n.io/"
+        title: "n8n Documentation Home"
+        type: "html"
+      - url: "https://docs.n8n.io/workflows/components/"
+        title: "n8n Workflow Components"
+        type: "html"
+      - url: "https://docs.n8n.io/integrations/builtin/core-nodes/"
+        title: "n8n Core Nodes"
+        type: "html"
+      - url: "https://docs.n8n.io/hosting/"
+        title: "n8n Hosting"
+        type: "html"
+
+  ollama:
+    base_url: "https://ollama.com"
+    urls:
+      - url: "https://github.com/ollama/ollama/blob/main/docs/README.md"
+        title: "Ollama Documentation"
+        type: "markdown"
+        is_github: true
+      - url: "https://github.com/ollama/ollama/blob/main/docs/api.md"
+        title: "Ollama API"
+        type: "markdown"
+        is_github: true
+      - url: "https://docs.ollama.com/modelfile"
+        title: "Ollama Modelfile"
+        type: "html"
+
+  general_ai:
+    urls:
+      - url: "https://github.com/microsoft/generative-ai-for-beginners/blob/main/README.md"
+        title: "Generative AI for Beginners"
+        type: "markdown"
+        is_github: true
+      - url: "https://developers.google.com/machine-learning/crash-course/ml-intro"
+        title: "Google ML Crash Course Intro"
+        type: "html"
+      - url: "https://aws.amazon.com/what-is/large-language-model/"
+        title: "AWS What is an LLM"
+        type: "html"

@@ -1,6 +1,5 @@
 """
 Centralized Path Management System
-نظام إدارة المسارات المركزي
 ==================================
 
 This module provides a centralized way to manage all project paths.

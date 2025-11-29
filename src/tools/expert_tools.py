@@ -1,5 +1,5 @@
 """
-Expert Tools - أدوات متخصصة للخبراء
+Expert Tools
 Specialized tools for:
 - Programming & Development
 - Web Design & Frontend
@@ -33,7 +33,6 @@ console = Console()
 class ExpertTools:
     """
     Expert-level tools for advanced tasks
-    أدوات متقدمة للمهام الاحترافية
     """
     
     def __init__(self):
@@ -634,6 +633,56 @@ volumes:
         
         except Exception as e:
             return f"Error searching StackOverflow: {str(e)}"
+    
+    def read_knowledge_base(self, technology: str) -> str:
+        """
+        Read saved knowledge from local database.
+        
+        Args:
+            technology: Technology name (e.g., "Docker", "n8n", "Python")
+        
+        Returns:
+            Formatted knowledge content or error message
+        """
+        try:
+            from src.core.knowledge_base import KnowledgeBase
+            kb = KnowledgeBase()
+            
+            # Retrieve knowledge for the technology
+            results = kb.retrieve_knowledge(
+                query=technology,
+                category=technology,
+                limit=5,
+                min_confidence=0.5
+            )
+            
+            if results:
+                formatted_content = []
+                formatted_content.append(f"# Knowledge Base: {technology}\n\n")
+                formatted_content.append(f"*Found {len(results)} relevant entry/entries*\n\n")
+                
+                for i, result in enumerate(results, 1):
+                    topic = result.get('topic', 'Untitled')
+                    content = result.get('content', '')
+                    confidence = result.get('confidence', 0.0)
+                    relevance = result.get('relevance_score', 0.0)
+                    
+                    formatted_content.append(f"## {i}. {topic}\n")
+                    formatted_content.append(f"*Confidence: {confidence:.2f} | Relevance: {relevance:.2f}*\n\n")
+                    
+                    # Truncate very long content
+                    if len(content) > 2000:
+                        content = content[:2000] + "\n\n... (content truncated, see full entry in knowledge base)"
+                    
+                    formatted_content.append(f"{content}\n\n")
+                    formatted_content.append("---\n\n")
+                
+                return "".join(formatted_content)
+            else:
+                return f"⚠️ No knowledge found for '{technology}' in the knowledge base.\n\nYou can learn about this technology using:\n- learn_new_technology(technology='{technology}')\n- search_documentation(technology='{technology}', query='...')"
+        
+        except Exception as e:
+            return f"Error reading knowledge base: {str(e)}"
 
 
 # Test

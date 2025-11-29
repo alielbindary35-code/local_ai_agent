@@ -18,6 +18,7 @@ from pathlib import Path
 from src.tools.tools import Tools
 from src.tools.expert_tools import ExpertTools
 from src.tools.extended_tools import ExtendedTools
+from src.tools.troubleshooting_tools import TroubleshootingTools
 from src.core.memory import Memory
 from src.core.knowledge_base import KnowledgeBase
 from src.core.prompts import get_system_prompt
@@ -28,6 +29,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.markdown import Markdown
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.prompt import Prompt
 
 console = Console()
 
@@ -58,9 +60,13 @@ class ExpertAgent:
         self.tools = Tools()
         self.expert_tools = ExpertTools()
         self.extended_tools = ExtendedTools()
+        self.troubleshooting_tools = TroubleshootingTools()
         self.knowledge_base = KnowledgeBase()
         self.memory = Memory(knowledge_base=self.knowledge_base)  # Integrate with KnowledgeBase
         self.conversation_history = []
+        
+        # Create conversation session
+        self.session_id = self.memory.create_session()
         
         # Get available models
         self.available_models = self._get_available_models()
@@ -99,7 +105,6 @@ class ExpertAgent:
     def _analyze_model_capabilities(self) -> Dict[str, Dict]:
         """
         Analyze capabilities of each model
-        تحليل قدرات كل موديل
         """
         capabilities = {}
         
@@ -154,7 +159,6 @@ class ExpertAgent:
     def _select_best_model(self, task_description: str, task_type: str = None) -> str:
         """
         Intelligently select the best model for the task
-        اختيار أفضل موديل للمهمة بذكاء
         
         Args:
             task_description: Description of the task
@@ -235,7 +239,6 @@ class ExpertAgent:
     def _detect_task_type(self, task_description: str) -> str:
         """
         Detect task type from description
-        كشف نوع المهمة من الوصف
         """
         task_lower = task_description.lower()
         
@@ -663,7 +666,12 @@ class ExpertAgent:
             border_style="cyan"
         ))
         
-        # 1. Check knowledge base for similar past knowledge
+        # 1. Get conversation context for multi-turn conversations
+        recent_context = self.memory.get_recent_context(self.session_id, turns=3)
+        if recent_context:
+            console.print(f"[dim]💬 Using context from {len(recent_context.split('User:'))-1} previous turn(s)[/dim]")
+        
+        # 2. Check knowledge base for similar past knowledge
         console.print("\n[yellow]🧠 Checking knowledge base for relevant information...[/yellow]")
         knowledge_results = self.knowledge_base.retrieve_knowledge(
             query=user_input,
@@ -679,11 +687,11 @@ class ExpertAgent:
                 console.print(f"[dim]💡 Using stored knowledge: {best_match['topic'][:50]}...[/dim]")
                 # Could potentially use this knowledge to enhance the response
         
-        # Select best model
+        # 3. Select best model
         selected_model = self._select_best_model(user_input, task_type)
         
-        # Build prompt
-        prompt = self._build_expert_prompt(user_input, selected_model)
+        # 4. Build prompt with conversation context
+        prompt = self._build_expert_prompt(user_input, selected_model, recent_context=recent_context)
         
         console.print(f"\n[yellow]🚀 Executing with {selected_model}...[/yellow]\n")
         console.print(f"[cyan]📊 Status:[/cyan] [green]Starting AI processing...[/green]\n")
@@ -1025,6 +1033,8 @@ class ExpertAgent:
                         result = self.expert_tools.execute(tool_name, params)
                     elif hasattr(self.extended_tools, tool_name):
                         result = self.extended_tools.execute(tool_name, params)
+                    elif hasattr(self.troubleshooting_tools, tool_name):
+                        result = self.troubleshooting_tools.execute(tool_name, params)
                     
                     console.print(Panel(str(result), title=f"✅ Tool Result: {tool_name}", border_style="green"))
                     
@@ -1059,8 +1069,25 @@ class ExpertAgent:
                     tools_executed_count += 1
                 
                 except Exception as e:
-                    console.print(f"[red]❌ Error executing {tool_name}: {str(e)}[/red]")
+                    error_msg = str(e)
+                    console.print(f"[red]❌ Error executing {tool_name}: {error_msg}[/red]")
                     console.print(Panel(str(e), title=f"❌ Execution Error: {tool_name}", border_style="red"))
+                    
+                    # Automatic error analysis using troubleshooting tools
+                    try:
+                        context = {
+                            "language": "python" if "python" in tool_name.lower() else "general",
+                            "component": "docker" if "docker" in tool_name.lower() else None
+                        }
+                        error_analysis = self.troubleshooting_tools.analyze_error(error_msg, context)
+                        console.print(Panel(
+                            error_analysis,
+                            title="🔍 Error Analysis",
+                            border_style="yellow"
+                        ))
+                        final_response += f"\n\n**Error Analysis:**\n{error_analysis}"
+                    except Exception as analysis_error:
+                        console.print(f"[yellow]⚠️ Error analysis failed: {analysis_error}[/yellow]")
         
         # === STEP 3: Fallback to function-style parsing ===
         # Regex to find tool calls: tool_name(arg="val") or tool_name("arg1", "arg2")
@@ -1266,6 +1293,8 @@ class ExpertAgent:
                     result = self.expert_tools.execute(tool_name, params)
                 elif hasattr(self.extended_tools, tool_name):
                     result = self.extended_tools.execute(tool_name, params)
+                elif hasattr(self.troubleshooting_tools, tool_name):
+                    result = self.troubleshooting_tools.execute(tool_name, params)
                 
                 console.print(Panel(str(result), title=f"✅ Tool Result: {tool_name}", border_style="green"))
                 
@@ -1501,6 +1530,38 @@ class ExpertAgent:
             except Exception as e:
                 console.print(f"[yellow]⚠️ Learning evaluation failed: {e}[/yellow]")
         
+        # 8. Save conversation turn to history for context-aware future responses
+        try:
+            context_data = {
+                "task_type": task_type,
+                "model_used": selected_model,
+                "tools_used": tools_used_list,
+                "tools_count": tools_executed_count
+            }
+            self.memory.save_conversation_turn(
+                session_id=self.session_id,
+                user_input=user_input,
+                agent_response=final_response,
+                context_data=context_data,
+                tools_used=tools_used_list
+            )
+            
+            # Update conversation_history list for prompt system
+            self.conversation_history.append({
+                "role": "user",
+                "content": user_input
+            })
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": final_response[:500]  # Truncate for memory efficiency
+            })
+            
+            # Keep only last 10 turns in memory to avoid prompt bloat
+            if len(self.conversation_history) > 20:  # 10 user + 10 assistant
+                self.conversation_history = self.conversation_history[-20:]
+        except Exception as e:
+            console.print(f"[yellow]⚠️ Failed to save conversation turn: {e}[/yellow]")
+        
         return final_response
     
     def _learn_from_web_search(self, user_input: str, search_results: List[Dict[str, Any]]):
@@ -1587,28 +1648,37 @@ class ExpertAgent:
         tags = [tech for tech in tech_keywords if tech in text_lower]
         return tags[:5]  # Limit to 5 tags
     
-    def _build_expert_prompt(self, user_input: str, model: str) -> str:
-        """Build optimized prompt for the selected model"""
+    def _build_expert_prompt(self, user_input: str, model: str, recent_context: str = "") -> str:
+        """Build optimized prompt for the selected model with conversation context"""
         
-        # Get all available tools from all three libraries
+        # Get all available tools from all libraries
         all_tools = (
             self.tools.get_tool_descriptions() + "\n\n" + 
             self.expert_tools.get_tool_descriptions() + "\n\n" +
-            self.extended_tools.get_tool_descriptions()
+            self.extended_tools.get_tool_descriptions() + "\n\n" +
+            self.troubleshooting_tools.get_tool_descriptions()
         )
+        
+        # Add conversation context to history if available
+        enhanced_history = self.conversation_history.copy()
+        if recent_context:
+            enhanced_history.append({
+                "role": "system",
+                "content": f"Previous conversation context:\n{recent_context}\n\nUse this context to provide more relevant and coherent responses."
+            })
         
         # Use centralized prompt system
         return get_system_prompt(
             user_input=user_input,
             tools_list=all_tools,
-            history=self.conversation_history,
+            history=enhanced_history,
             os_info=f"{self.tools.system} (Expert Mode)",
             online=self.online
         )
 
 
 def main():
-    """Test the expert agent"""
+    """Interactive mode for the expert agent"""
     console.print("""
 [bold cyan]
 ╔═══════════════════════════════════════════════════════════╗
@@ -1621,19 +1691,35 @@ def main():
 [/bold cyan]
     """)
     
-    agent = ExpertAgent()
+    # Initialize agent
+    try:
+        agent = ExpertAgent()
+    except Exception as e:
+        console.print(f"[red]Failed to initialize agent: {e}[/red]")
+        console.print("[yellow]Make sure Ollama is running at http://localhost:11434[/yellow]")
+        return
     
-    # Test with different task types
-    test_tasks = [
-        ("Create a Python function to calculate fibonacci", "coding"),
-        ("How do I deploy a Docker container?", "docker"),
-        ("Design a landing page with HTML/CSS", "web_design"),
-    ]
+    # Main interactive loop
+    console.print("\n[green]Expert Agent ready! Type your request or 'quit' to exit.[/green]\n")
     
-    for task, task_type in test_tasks:
-        console.print(f"\n[bold]{'='*70}[/bold]")
-        agent.run(task, task_type)
-        console.print(f"[bold]{'='*70}[/bold]\n")
+    while True:
+        try:
+            user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]")
+            
+            if user_input.lower() in ['quit', 'exit', 'q', 'bye', 'stop']:
+                console.print("[yellow]Goodbye! 👋[/yellow]")
+                break
+            
+            if not user_input.strip():
+                continue
+            
+            # Run agent
+            agent.run(user_input)
+        
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Interrupted. Type 'quit' to exit.[/yellow]")
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/red]")
 
 
 if __name__ == "__main__":

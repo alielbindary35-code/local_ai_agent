@@ -37,3 +37,10 @@ cryptography>=41.0.0
 pytest>=7.4.0
 pytest-cov>=4.1.0
 pytest-mock>=3.12.0
+
+# Desktop Application (PyQt6)
+PyQt6>=6.6.0
+PyQt6-Qt6>=6.6.0
+PyQt6-sip>=13.6.0
+QScintilla>=2.14.0  # For code editor syntax highlighting
+markdown>=3.5.0  # For markdown rendering in chat

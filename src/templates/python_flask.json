@@ -1,0 +1,19 @@
+{
+  "name": "Python Flask Project",
+  "type": "python",
+  "framework": "flask",
+  "structure": {
+    "src/": {
+      "app.py": "from flask import Flask\n\napp = Flask(__name__)\n\n@app.route('/')\ndef hello():\n    return {'message': 'Hello, World!'}\n\nif __name__ == '__main__':\n    app.run(debug=True)",
+      "__init__.py": ""
+    },
+    "tests/": {
+      "test_app.py": "import unittest\nfrom src.app import app\n\nclass TestApp(unittest.TestCase):\n    def test_hello(self):\n        with app.test_client() as client:\n            response = client.get('/')\n            self.assertEqual(response.status_code, 200)\n\nif __name__ == '__main__':\n    unittest.main()"
+    },
+    "requirements.txt": "flask\nflask-cors\npytest\npytest-cov",
+    "requirements-dev.txt": "pytest\npytest-cov\nblack\nflake8",
+    "README.md": "# Flask Project\n\n## Installation\n```bash\npip install -r requirements.txt\n```\n\n## Run\n```bash\npython src/app.py\n```",
+    ".env.example": "FLASK_APP=src/app.py\nFLASK_ENV=development\nSECRET_KEY=your-secret-key-here"
+  }
+}
+

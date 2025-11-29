@@ -1,0 +1,15 @@
+{
+  "name": "Python FastAPI Project",
+  "type": "python",
+  "framework": "fastapi",
+  "structure": {
+    "src/": {
+      "main.py": "from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI(title=\"FastAPI Project\")\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n@app.get(\"/\")\ndef read_root():\n    return {\"message\": \"Hello, World!\"}\n\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"healthy\"}",
+      "__init__.py": ""
+    },
+    "requirements.txt": "fastapi\nuvicorn[standard]\npython-multipart",
+    "requirements-dev.txt": "pytest\npytest-asyncio\nhttpx\nblack\nflake8",
+    "README.md": "# FastAPI Project\n\n## Installation\n```bash\npip install -r requirements.txt\n```\n\n## Run\n```bash\nuvicorn src.main:app --reload\n```"
+  }
+}
+

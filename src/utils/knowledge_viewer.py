@@ -1,6 +1,6 @@
 """
-Knowledge Base Viewer - View and manage stored knowledge
-عرض وإدارة المعرفة المخزنة
+Knowledge Base Viewer
+View and manage stored knowledge
 """
 
 import sqlite3

@@ -1,0 +1,17 @@
+{
+  "name": "React Application",
+  "type": "react",
+  "structure": {
+    "src/": {
+      "App.jsx": "import React from 'react';\nimport './App.css';\n\nfunction App() {\n  return (\n    <div className=\"App\">\n      <header className=\"App-header\">\n        <h1>Welcome to React App</h1>\n      </header>\n    </div>\n  );\n}\n\nexport default App;",
+      "App.css": ".App {\n  text-align: center;\n}\n\n.App-header {\n  background-color: #282c34;\n  padding: 20px;\n  color: white;\n}",
+      "index.js": "import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport './index.css';\nimport App from './App';\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);"
+    },
+    "public/": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <title>React App</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>"
+    },
+    "package.json": "{\n  \"name\": \"react-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"dependencies\": {\n    \"react\": \"^18.0.0\",\n    \"react-dom\": \"^18.0.0\",\n    \"react-scripts\": \"5.0.1\"\n  },\n  \"scripts\": {\n    \"start\": \"react-scripts start\",\n    \"build\": \"react-scripts build\",\n    \"test\": \"react-scripts test\"\n  }\n}",
+    ".gitignore": "node_modules/\n.env\nbuild/\n*.log"
+  }
+}
+

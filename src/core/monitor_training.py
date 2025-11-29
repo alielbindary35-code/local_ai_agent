@@ -1,6 +1,6 @@
 """
-Real-time Training Monitor - مراقب التدريب المباشر
-يعرض تقدم التدريب في الوقت الفعلي ويكتشف الأخطاء
+Real-time Training Monitor
+Displays training progress in real-time and detects errors
 """
 
 import time

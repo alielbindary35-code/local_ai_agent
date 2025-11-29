@@ -1,6 +1,6 @@
 """
-Automated Training Script - تدريب تلقائي للـ AI Agent
-يقوم بتشغيل سلسلة من الأسئلة التدريبية ومراقبة الأداء
+Automated Training Script
+Runs a series of training questions and monitors performance
 """
 
 import sys
@@ -15,67 +15,67 @@ from src.agents.agent import Agent
 
 console = Console()
 
-# 📚 Training Questions Database
+# Training Questions Database
 TRAINING_QUESTIONS = {
     "Phase 1: Basics": [
         {
-            "question": "ما هو نظام التشغيل الذي أعمل عليه؟",
+            "question": "What operating system am I working on?",
             "expected_tool": "get_system_info",
             "description": "Basic system info query"
         },
         {
-            "question": "اعرض لي محتويات المجلد الحالي",
+            "question": "Show me the contents of the current directory",
             "expected_tool": "list_dir",
             "description": "List directory contents"
         },
         {
-            "question": "اقرأ محتوى ملف README.md",
+            "question": "Read the contents of README.md file",
             "expected_tool": "read_file",
             "description": "Read file contents"
         },
         {
-            "question": "ما هو استخدام الـ CPU والـ RAM الحالي؟",
+            "question": "What is the current CPU and RAM usage?",
             "expected_tool": "monitor_resources",
             "description": "Monitor system resources"
         }
     ],
     "Phase 2: Error Handling": [
         {
-            "question": "ابحث عن ملفات بامتداد .xyz في المجلد الحالي",
+            "question": "Search for files with .xyz extension in the current directory",
             "expected_tool": "search_files",
             "description": "Search for non-existent file type"
         },
         {
-            "question": "هل خدمة Ollama تعمل حالياً؟",
+            "question": "Is the Ollama service currently running?",
             "expected_tool": "check_service_status",
             "description": "Check if service is running"
         }
     ],
     "Phase 3: Complex Tasks": [
         {
-            "question": "ابحث في الإنترنت عن latest Python version 2024",
+            "question": "Search the internet for latest Python version 2024",
             "expected_tool": "search_web",
             "description": "Web search task"
         },
         {
-            "question": "احسب متوسط الأرقام: 10, 20, 30, 40, 50",
+            "question": "Calculate the average of numbers: 10, 20, 30, 40, 50",
             "expected_tool": "python_repl",
             "description": "Calculate average using Python"
         },
         {
-            "question": "أنشئ ملف نصي جديد باسم test_output.txt واكتب فيه Hello from AI Agent",
+            "question": "Create a new text file named test_output.txt and write 'Hello from AI Agent' in it",
             "expected_tool": "write_file",
             "description": "Create and write to file"
         }
     ],
     "Phase 4: Intelligence": [
         {
-            "question": "ما هي الملفات Python في هذا المجلد؟",
+            "question": "What are the Python files in this directory?",
             "expected_tool": "search_files",
             "description": "Search for Python files"
         },
         {
-            "question": "احسب مساحة القرص المتبقية بالجيجابايت",
+            "question": "Calculate the remaining disk space in gigabytes",
             "expected_tool": "get_system_info",
             "description": "Get disk space"
         }
@@ -94,8 +94,9 @@ class TrainingSession:
         
     def setup_logging(self):
         """Setup logging for this session"""
-        log_dir = Path("logs")
-        log_dir.mkdir(exist_ok=True)
+        from src.core.paths import get_logs_dir
+        log_dir = get_logs_dir()
+        log_dir.mkdir(parents=True, exist_ok=True)
         
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.log_file = log_dir / f"automated_training_{timestamp}.txt"

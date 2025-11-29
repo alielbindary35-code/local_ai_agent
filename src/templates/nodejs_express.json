@@ -1,0 +1,16 @@
+{
+  "name": "Node.js Express API",
+  "type": "nodejs",
+  "framework": "express",
+  "structure": {
+    "src/": {
+      "index.js": "const express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.use(express.json());\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello, World!' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'healthy' });\n});\n\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});",
+      "routes/": {
+        "api.js": "const express = require('express');\nconst router = express.Router();\n\nrouter.get('/test', (req, res) => {\n  res.json({ message: 'API test endpoint' });\n});\n\nmodule.exports = router;"
+      }
+    },
+    "package.json": "{\n  \"name\": \"express-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/index.js\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\",\n    \"dev\": \"nodemon src/index.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.0\"\n  },\n  \"devDependencies\": {\n    \"nodemon\": \"^2.0.0\"\n  }\n}",
+    ".env.example": "PORT=3000\nNODE_ENV=development"
+  }
+}
+

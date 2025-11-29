@@ -1,6 +1,5 @@
 """
 Expert-Level Local AI Agent
-وكيل الذكاء الاصطناعي المحلي المتقدم
 
 Main agent file implementing the ReAct (Reasoning + Acting) loop
 with multi-model orchestration, risk assessment, and continuous learning.
@@ -31,8 +30,6 @@ console = Console()
 class Agent:
     """
     Expert-Level AI Agent with ReAct loop, multi-model support, and learning capabilities.
-    
-    وكيل ذكاء اصطناعي متقدم مع حلقة ReAct ودعم متعدد النماذج وقدرات التعلم.
     """
     
     def __init__(
@@ -412,7 +409,24 @@ class Agent:
                         })
                         continue # Skip adding user message, let the agent retry immediately
                     
-                    # Add to history
+                    # Loop Detection - Check if we're repeating the same action (BEFORE adding to history)
+                    current_signature = (action, str(action_input))
+                    if last_action_signature == current_signature:
+                        console.print("[yellow]⚠️ Loop detected! The agent is repeating the same action.[/yellow]")
+                        # Force final answer after loop detection
+                        final_answer = f"Based on the tool execution:\n\n{result}"
+                        break
+                    last_action_signature = current_signature
+                    
+                    # Check if result is sufficient to answer the question
+                    # For read-only operations, if we got valid data, we can conclude immediately
+                    if action in ['get_system_info', 'list_dir', 'read_file', 'monitor_resources', 'check_service_status', 'search_files']:
+                        if result and (not isinstance(result, str) or ("Error" not in str(result) and "not found" not in str(result).lower())):
+                            # We have valid data, can provide final answer
+                            final_answer = f"Here is the information you requested:\n\n{result}"
+                            break
+                    
+                    # Add to history (only if we're continuing)
                     self.conversation_history.append({
                         "role": "assistant",
                         "content": ai_response
@@ -421,15 +435,6 @@ class Agent:
                         "role": "user", 
                         "content": f"Tool '{action}' output: {result}"
                     })
-
-                    # Loop Detection
-                    if last_action_signature == (action, str(action_input)):
-                        console.print("[yellow]⚠️ Loop detected! The agent is repeating the same action.[/yellow]")
-                        self.conversation_history.append({
-                            "role": "system",
-                            "content": "You are repeating the same action. Try a different approach or use your internal knowledge if the tool is not working."
-                        })
-                    last_action_signature = (action, str(action_input))
                     
                 else:
                     console.print("[red]Action denied by user.[/red]")

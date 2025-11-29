@@ -1,6 +1,5 @@
 """
 Tools Library - Comprehensive tool collection for the AI agent
-مكتبة الأدوات - مجموعة شاملة من الأدوات لوكيل الذكاء الاصطناعي
 
 Contains 20+ tools for file operations, command execution, web access,
 package management, code execution, and more.
@@ -27,8 +26,6 @@ from bs4 import BeautifulSoup
 class Tools:
     """
     Comprehensive tool library for the AI agent.
-    
-    مكتبة أدوات شاملة لوكيل الذكاء الاصطناعي.
     """
     
     def __init__(self):
@@ -100,13 +97,12 @@ class Tools:
             return f"Error: Tool '{tool_name}' not found"
     
     # ═══════════════════════════════════════════════════════════
-    # FILE SYSTEM TOOLS - أدوات نظام الملفات
+    # FILE SYSTEM TOOLS
     # ═══════════════════════════════════════════════════════════
     
     def read_file(self, filepath: str, encoding: str = 'utf-8') -> str:
         """
         Read content from a file.
-        قراءة محتوى من ملف.
         """
         try:
             with open(filepath, 'r', encoding=encoding) as f:
@@ -117,7 +113,6 @@ class Tools:
     def write_file(self, filepath: str, content: str, encoding: str = 'utf-8') -> str:
         """
         Write content to a file.
-        كتابة محتوى إلى ملف.
         """
         try:
             # Create parent directories if they don't exist
@@ -132,7 +127,6 @@ class Tools:
     def create_directory(self, dirpath: str) -> str:
         """
         Create a directory/folder.
-        إنشاء مجلد.
         """
         try:
             Path(dirpath).mkdir(parents=True, exist_ok=True)
@@ -142,13 +136,12 @@ class Tools:
     
     def create_project(self, project_name: str, project_type: str = "python", options: Optional[Dict[str, Any]] = None) -> str:
         """
-        Create a complete project structure.
-        إنشاء هيكل مشروع كامل.
+        Create a complete project structure with dependencies, configs, tests, CI/CD, and Docker.
         
         Args:
             project_name: Name of the project
-            project_type: Type of project (python, web, nodejs, react, vue, etc.)
-            options: Additional options (include_tests, include_docs, framework, etc.)
+            project_type: Type of project (python, web, nodejs, react, vue, flask, django, fastapi, etc.)
+            options: Additional options (include_tests, include_docs, framework, include_docker, include_cicd, etc.)
         """
         if options is None:
             options = {}
@@ -158,27 +151,199 @@ class Tools:
             base_path.mkdir(exist_ok=True)
             
             created_items = []
+            framework = options.get("framework", "").lower()
+            include_tests = options.get("include_tests", True)
+            include_docs = options.get("include_docs", True)
+            include_docker = options.get("include_docker", False)
+            include_cicd = options.get("include_cicd", False)
+            include_env = options.get("include_env", True)
             
-            if project_type.lower() == "python":
+            if project_type.lower() == "python" or framework in ["flask", "django", "fastapi"]:
                 # Python project structure
                 (base_path / "src").mkdir(exist_ok=True)
                 (base_path / "src" / "__init__.py").write_text("")
                 created_items.append("src/")
                 
-                if options.get("include_tests", True):
+                # Framework-specific setup
+                if framework == "flask":
+                    (base_path / "src" / "app.py").write_text("""from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return 'Hello, World!'
+
+if __name__ == '__main__':
+    app.run(debug=True)
+""")
+                    created_items.append("src/app.py")
+                    deps = "flask\nflask-cors\n"
+                elif framework == "django":
+                    deps = "django\ndjangorestframework\n"
+                elif framework == "fastapi":
+                    (base_path / "src" / "main.py").write_text("""from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
+""")
+                    created_items.append("src/main.py")
+                    deps = "fastapi\nuvicorn\n"
+                else:
+                    (base_path / "src" / "main.py").write_text("""def main():
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    main()
+""")
+                    created_items.append("src/main.py")
+                    deps = ""
+                
+                if include_tests:
                     (base_path / "tests").mkdir(exist_ok=True)
                     (base_path / "tests" / "__init__.py").write_text("")
+                    (base_path / "tests" / "test_main.py").write_text("""import unittest
+import sys
+from pathlib import Path
+
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+class TestMain(unittest.TestCase):
+    def test_basic(self):
+        self.assertTrue(True)
+
+if __name__ == '__main__':
+    unittest.main()
+""")
                     created_items.append("tests/")
+                    created_items.append("tests/test_main.py")
+                    if deps and "pytest" not in deps:
+                        deps += "pytest\npytest-cov\n"
                 
-                if options.get("include_docs", True):
+                if include_docs:
                     (base_path / "docs").mkdir(exist_ok=True)
                     (base_path / "docs" / "README.md").write_text(f"# {project_name}\n\nProject documentation")
                     created_items.append("docs/")
                 
-                (base_path / "requirements.txt").write_text("# Add your dependencies here\n")
-                (base_path / "README.md").write_text(f"# {project_name}\n\nProject description")
-                (base_path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\nvenv/\n.venv/\n*.egg-info/\ndist/\nbuild/")
-                created_items.extend(["requirements.txt", "README.md", ".gitignore"])
+                # Requirements.txt with dependencies
+                (base_path / "requirements.txt").write_text(f"# {project_name} dependencies\n{deps}")
+                created_items.append("requirements.txt")
+                
+                # Requirements-dev.txt
+                if include_tests:
+                    (base_path / "requirements-dev.txt").write_text("# Development dependencies\npytest\npytest-cov\nblack\nflake8\n")
+                    created_items.append("requirements-dev.txt")
+                
+                # README.md
+                readme_content = f"""# {project_name}
+
+## Description
+{options.get('description', 'Project description')}
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+
+```bash
+python src/main.py
+```
+
+## Testing
+
+```bash
+pytest
+```
+
+## License
+{options.get('license', 'MIT')}
+"""
+                (base_path / "README.md").write_text(readme_content)
+                created_items.append("README.md")
+                
+                # .gitignore
+                (base_path / ".gitignore").write_text("__pycache__/\n*.pyc\n*.pyo\n*.pyd\n.Python\n.env\nvenv/\n.venv/\n*.egg-info/\ndist/\nbuild/\n.pytest_cache/\n.coverage\nhtmlcov/\n*.log\n")
+                created_items.append(".gitignore")
+                
+                # .env.example
+                if include_env:
+                    (base_path / ".env.example").write_text("# Environment variables\n# Copy this file to .env and fill in your values\n\nDEBUG=True\nSECRET_KEY=your-secret-key-here\n")
+                    created_items.append(".env.example")
+                
+                # Docker setup
+                if include_docker:
+                    (base_path / "Dockerfile").write_text(f"""FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["python", "src/main.py"]
+""")
+                    (base_path / ".dockerignore").write_text("__pycache__\n*.pyc\n.env\nvenv\n.git\n.gitignore\nREADME.md\n")
+                    (base_path / "docker-compose.yml").write_text(f"""version: '3.8'
+
+services:
+  {project_name.lower().replace(' ', '-')}:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+    volumes:
+      - .:/app
+""")
+                    created_items.extend(["Dockerfile", ".dockerignore", "docker-compose.yml"])
+                
+                # CI/CD setup
+                if include_cicd:
+                    (base_path / ".github").mkdir(exist_ok=True)
+                    (base_path / ".github" / "workflows").mkdir(exist_ok=True)
+                    (base_path / ".github" / "workflows" / "ci.yml").write_text(f"""name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+    
+    - name: Run tests
+      run: |
+        pytest --cov=src --cov-report=xml
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+""")
+                    created_items.append(".github/workflows/ci.yml")
             
             elif project_type.lower() in ["web", "html", "static"]:
                 # Static web project
@@ -271,7 +436,7 @@ export default App;""")
     def list_dir(self, dirpath: str = ".", extensions: Optional[List[str]] = None) -> str:
         """
         List contents of a directory.
-        عرض محتويات مجلد.
+        
         """
         try:
             path = Path(dirpath)
@@ -296,7 +461,7 @@ export default App;""")
     def search_files(self, pattern: str, directory: str = ".", recursive: bool = True) -> str:
         """
         Search for files matching a pattern.
-        البحث عن ملفات تطابق نمط معين.
+        
         """
         try:
             path = Path(directory)
@@ -315,7 +480,7 @@ export default App;""")
     def delete_file(self, filepath: str) -> str:
         """
         Delete a file.
-        حذف ملف.
+        
         """
         try:
             Path(filepath).unlink()
@@ -326,7 +491,7 @@ export default App;""")
     def check_permissions(self, filepath: str) -> str:
         """
         Check file/directory permissions.
-        فحص صلاحيات ملف/مجلد.
+        
         """
         try:
             path = Path(filepath)
@@ -345,13 +510,13 @@ export default App;""")
             return f"Error checking permissions: {str(e)}"
     
     # ═══════════════════════════════════════════════════════════
-    # COMMAND EXECUTION - تنفيذ الأوامر
+    # COMMAND EXECUTION - 
     # ═══════════════════════════════════════════════════════════
     
     def run_command(self, command: str, timeout: int = 30) -> Dict[str, Any]:
         """
         Execute a system command (cross-platform).
-        تنفيذ أمر نظام (متعدد المنصات).
+        
         """
         try:
             # Determine shell based on OS
@@ -380,13 +545,13 @@ export default App;""")
             return {"error": str(e)}
     
     # ═══════════════════════════════════════════════════════════
-    # WEB ACCESS TOOLS - أدوات الوصول للويب
+    # WEB ACCESS TOOLS - 
     # ═══════════════════════════════════════════════════════════
     
     def search_web(self, query: str, max_results: int = 5, region: str = "us-en", prefer_official: bool = True) -> List[Dict[str, str]]:
         """
         Search the web using DuckDuckGo.
-        البحث في الإنترنت باستخدام DuckDuckGo.
+        
         
         Args:
             query: Search query
@@ -398,10 +563,24 @@ export default App;""")
             if DDGS is None:
                 return [{"error": "DuckDuckGo search not available. Please install: pip install ddgs"}]
             
-            # Detect if query is about system info and add official sites
-            if prefer_official and ("system info" in query.lower() or "system information" in query.lower()):
-                # Add Microsoft Docs filter for system info
-                query = f"site:docs.microsoft.com OR site:learn.microsoft.com {query}"
+            # Improve query for technical searches
+            query_lower = query.lower()
+            
+            # Add official documentation sites for technical queries
+            if prefer_official:
+                if "python" in query_lower and "version" in query_lower:
+                    # Prioritize Python official docs
+                    query = f"site:python.org OR site:docs.python.org {query}"
+                elif "docker" in query_lower:
+                    query = f"site:docs.docker.com {query}"
+                elif "postgres" in query_lower or "postgresql" in query_lower:
+                    query = f"site:postgresql.org OR site:www.postgresql.org/docs {query}"
+                elif "n8n" in query_lower:
+                    query = f"site:docs.n8n.io {query}"
+                elif "system info" in query_lower or "system information" in query_lower:
+                    query = f"site:docs.microsoft.com OR site:learn.microsoft.com {query}"
+                elif any(tech in query_lower for tech in ["data science", "pandas", "numpy", "matplotlib"]):
+                    query = f"site:pandas.pydata.org OR site:numpy.org OR site:matplotlib.org {query}"
             
             with DDGS() as ddgs:
                 # Use region parameter to prefer English results
@@ -500,7 +679,7 @@ export default App;""")
     def scrape_webpage(self, url: str) -> str:
         """
         Extract text content from a webpage.
-        استخراج محتوى نصي من صفحة ويب.
+        
         """
         try:
             response = requests.get(url, timeout=10)
@@ -525,7 +704,7 @@ export default App;""")
     def fetch_api(self, url: str, method: str = "GET", data: Optional[Dict] = None) -> Any:
         """
         Make HTTP API request.
-        إجراء طلب API عبر HTTP.
+        
         """
         try:
             if method.upper() == "GET":
@@ -545,7 +724,7 @@ export default App;""")
     def download_file(self, url: str, destination: str) -> str:
         """
         Download a file from URL.
-        تحميل ملف من رابط.
+        
         """
         try:
             response = requests.get(url, stream=True, timeout=30)
@@ -560,13 +739,13 @@ export default App;""")
             return f"Error downloading file: {str(e)}"
     
     # ═══════════════════════════════════════════════════════════
-    # PACKAGE MANAGEMENT - إدارة الحزم
+    # PACKAGE MANAGEMENT - 
     # ═══════════════════════════════════════════════════════════
     
     def install_package(self, package: str, manager: str = "auto") -> str:
         """
         Install a package using appropriate package manager.
-        تثبيت حزمة باستخدام مدير الحزم المناسب.
+        
         
         Args:
             package: Package name
@@ -618,15 +797,21 @@ export default App;""")
         return f"Tool '{tool_name}' is not found. You might need to install a package for it."
     
     # ═══════════════════════════════════════════════════════════
-    # CODE EXECUTION - تنفيذ الكود
+    # CODE EXECUTION - 
     # ═══════════════════════════════════════════════════════════
     
     def python_repl(self, code: str) -> Any:
         """
         Execute Python code in isolated environment.
-        تنفيذ كود Python في بيئة معزولة.
+        
         """
         try:
+            # Validate syntax before execution
+            try:
+                compile(code, '<string>', 'exec')
+            except SyntaxError as e:
+                return f"Syntax Error: {str(e)}. Please check parentheses, brackets, and quotes are balanced."
+            
             # Create isolated namespace
             local_vars = {}
             global_vars = {
@@ -639,6 +824,9 @@ export default App;""")
                 'float': float,
                 'list': list,
                 'dict': dict,
+                'sum': sum,
+                'min': min,
+                'max': max,
             }
             
             # Try to import commonly used libraries
@@ -653,19 +841,34 @@ export default App;""")
             # Execute code
             exec(code, global_vars, local_vars)
             
-            # Return local variables
-            return local_vars if local_vars else "Code executed successfully (no return value)"
+            # Return local variables or print output
+            if local_vars:
+                return local_vars
+            else:
+                # Try to capture print output
+                import io
+                import sys
+                old_stdout = sys.stdout
+                sys.stdout = buffer = io.StringIO()
+                try:
+                    exec(code, global_vars, {})
+                    output = buffer.getvalue()
+                    sys.stdout = old_stdout
+                    return output.strip() if output else "Code executed successfully (no return value)"
+                except Exception as e:
+                    sys.stdout = old_stdout
+                    return f"Error executing Python code: {str(e)}"
         except Exception as e:
             return f"Error executing Python code: {str(e)}"
     
     # ═══════════════════════════════════════════════════════════
-    # SYSTEM INFO TOOLS - أدوات معلومات النظام
+    # SYSTEM INFO TOOLS - 
     # ═══════════════════════════════════════════════════════════
     
     def get_system_info(self) -> Dict[str, Any]:
         """
         Get system information.
-        الحصول على معلومات النظام.
+        
         """
         try:
             return {
@@ -685,7 +888,7 @@ export default App;""")
     def check_service_status(self, service_name: str = None, service_names: List[str] = None) -> str:
         """
         Check if a service is running. If no name provided, lists all running services.
-        فحص إذا كانت خدمة تعمل.
+        
         """
         # Handle hallucinated plural argument
         if service_names and not service_name:
@@ -716,7 +919,7 @@ export default App;""")
     def monitor_resources(self) -> Dict[str, Any]:
         """
         Monitor system resources.
-        مراقبة موارد النظام.
+        
         """
         try:
             return {
@@ -730,25 +933,25 @@ export default App;""")
             return {"error": str(e)}
     
     # ═══════════════════════════════════════════════════════════
-    # DOCKER TOOLS - أدوات Docker
+    # DOCKER TOOLS - 
     # ═══════════════════════════════════════════════════════════
     
     def docker_command(self, command: str) -> Dict[str, Any]:
         """
         Execute Docker commands.
-        تنفيذ أوامر Docker.
+        
         """
         full_command = f"docker {command}"
         return self.run_command(full_command)
     
     # ═══════════════════════════════════════════════════════════
-    # SECURITY TOOLS - أدوات الأمان
+    # SECURITY TOOLS - 
     # ═══════════════════════════════════════════════════════════
     
     def scan_ports(self, host: str = "localhost", ports: List[int] = None) -> Dict[str, Any]:
         """
         Scan network ports.
-        فحص منافذ الشبكة.
+        
         """
         if ports is None:
             ports = [80, 443, 22, 21, 3306, 5432, 27017]
@@ -771,7 +974,7 @@ export default App;""")
     def check_ssl(self, domain: str) -> Dict[str, Any]:
         """
         Check SSL certificate status.
-        فحص حالة شهادة SSL.
+        
         """
         try:
             import ssl
@@ -799,13 +1002,13 @@ export default App;""")
             return {"error": str(e)}
     
     # ═══════════════════════════════════════════════════════════
-    # CUSTOM TOOLS - الأدوات المخصصة
+    # CUSTOM TOOLS - 
     # ═══════════════════════════════════════════════════════════
     
     def register_custom_tool(self, name: str, command: str, description: str) -> str:
         """
         Register a new custom tool.
-        تسجيل أداة مخصصة جديدة.
+        
         """
         self.custom_tools[name] = {
             "command": command,
